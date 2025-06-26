@@ -8,58 +8,52 @@ const DEFAULT_MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
 
 exports.uploadImage = async (req, res) => {
   const { folderId } = req.params;
-  const file = req.file;
+  const files = req.files;
   const user = req.user;
 
-  if (!file) {
-    return res.status(400).json({ error: 'Image file is required.' });
+  if (!files || files.length === 0) {
+    return res.status(400).json({ error: 'Image file(s) are required.' });
   }
   if (!folderId) {
     return res.status(400).json({ error: 'Folder ID is required.' });
   }
 
   try {
-    const maxUploadSizeSetting = await Setting.get('max_upload_size');
-    const maxUploadSize = maxUploadSizeSetting ? parseInt(maxUploadSizeSetting.value, 10) : DEFAULT_MAX_UPLOAD_SIZE;
-
-    if (file.size > maxUploadSize) {
-      // Clean up the uploaded file if it's too large
-      fs.unlinkSync(file.path);
-      return res.status(400).json({ error: `File size exceeds the maximum limit of ${maxUploadSize / 1024 / 1024}MB.` });
-    }
-
     const folder = await Folder.findById(folderId);
     if (!folder) {
-      fs.unlinkSync(file.path);
       return res.status(404).json({ error: 'Folder not found.' });
     }
 
     if (folder.user_id !== user.id && user.role !== 'admin') {
-      fs.unlinkSync(file.path);
       return res.status(403).json({ error: 'Forbidden: You do not have permission to upload to this folder.' });
     }
 
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const localUrl = `${protocol}://${req.get('host')}/uploads/${file.filename}`;
+    const newImages = [];
+    for (const file of files) {
+      const localUrl = `${protocol}://${req.get('host')}/uploads/${file.filename}`;
+      const newImage = await Image.create(
+        file.originalname,
+        file.filename,
+        file.mimetype,
+        file.size,
+        folderId,
+        user.id,
+        localUrl
+      );
+      newImages.push(newImage);
+    }
     
-    const newImage = await Image.create(
-      file.originalname,
-      file.filename,
-      file.mimetype,
-      file.size,
-      folderId,
-      user.id,
-      localUrl
-    );
-
-    res.status(201).json(newImage);
+    res.status(201).json(newImages);
   } catch (error) {
     console.error("Error uploading image:", error);
-    // If something goes wrong after the file is saved, delete the file
-    if (file && file.path) {
-      fs.unlinkSync(file.path);
+    // If something goes wrong after the file is saved, delete the files
+    if (files && files.length > 0) {
+      for (const file of files) {
+        fs.unlinkSync(file.path);
+      }
     }
-    res.status(500).json({ error: 'Error uploading image.' });
+    res.status(500).json({ error: 'Error uploading image(s).' });
   }
 };
 

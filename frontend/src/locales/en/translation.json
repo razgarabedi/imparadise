@@ -37,13 +37,14 @@
     "copied": "Copied!"
   },
   "folder_detail": {
-    "upload_title": "Upload Image(s) to \"{{folderName}}\"",
-    "upload_subtitle": "Drag & drop or click to select files. Max {{maxSize}}MB per file.",
-    "dropzone_title": "Drop images here or click to browse",
-    "dropzone_subtitle": "Supports JPG, PNG, GIF, etc. Max {{maxSize}}MB per file.",
+    "upload_title": "Upload to {{folderName}}",
+    "upload_subtitle": "Max file size: {{maxSize}}MB",
+    "dropzone_title": "Drag & drop files here, or click to select files",
+    "dropzone_subtitle": "Images (max. {{maxSize}}MB)",
     "upload_button": "Upload",
     "download_button": "Download",
-    "delete_button": "Delete"
+    "delete_button": "Delete",
+    "uploading": "Uploading..."
   },
   "public_folder": {
     "empty_folder": "This folder is empty."

@@ -14,26 +14,12 @@ export const SettingsProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  const processSettings = (settingsData) => {
-    const processed = { ...settingsData };
-    const imageKeys = ['website_logo_url', 'homepage_image_url'];
-
-    imageKeys.forEach(key => {
-      if (processed[key] && processed[key].startsWith('/')) {
-        processed[key] = `${backendUrl}${processed[key]}`;
-      }
-    });
-
-    return processed;
-  };
-
   useEffect(() => {
     const fetchSiteSettings = async () => {
       try {
         const response = await axios.get(`${backendUrl}/api/public-settings`);
         if (response.data) {
-          const finalSettings = processSettings(response.data);
-          setSettings(finalSettings);
+          setSettings(response.data);
         }
       } catch (error) {
         console.error('Failed to fetch site settings:', error);

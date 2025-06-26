@@ -5,16 +5,17 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const API_URL_IMAGES = `${API_BASE_URL}/api/images/`;
 const API_URL_FOLDERS = `${API_BASE_URL}/api/folders/`;
 
-const uploadImage = (file, folderId, onUploadProgress) => {
+const uploadImages = (files, folderId) => {
   const formData = new FormData();
-  formData.append('image', file);
+  files.forEach(file => {
+    formData.append('images', file);
+  });
 
   return axios.post(API_URL_IMAGES + `upload/${folderId}`, formData, {
     headers: {
       ...authHeader(),
       'Content-Type': 'multipart/form-data',
     },
-    onUploadProgress,
   });
 };
 
@@ -27,7 +28,7 @@ const deleteImage = (id) => {
 };
 
 const imageService = {
-  uploadImage,
+  uploadImages,
   getImagesInFolder,
   deleteImage,
 };

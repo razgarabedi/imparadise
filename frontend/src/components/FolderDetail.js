@@ -13,7 +13,7 @@ const FolderDetail = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [uploadProgress, setUploadProgress] = useState({});
+  const [isUploading, setIsUploading] = useState(false);
   const [maxUploadSize, setMaxUploadSize] = useState(10485760); // Default 10MB
   const [selectedImage, setSelectedImage] = useState(null);
   const { t } = useTranslation();
@@ -38,37 +38,29 @@ const FolderDetail = () => {
   }, [fetchFolderData]);
 
   const onDrop = useCallback(acceptedFiles => {
-    acceptedFiles.forEach(file => {
-      if (file.size > maxUploadSize) {
-        setError(`File ${file.name} exceeds the maximum limit of ${Math.round(maxUploadSize / 1024 / 1024)}MB.`);
-        return;
-      }
-      const uploadId = Date.now() + file.name;
-      imageService.uploadImage(file, folderId, (event) => {
-        setUploadProgress(prev => ({
-          ...prev,
-          [uploadId]: {
-            progress: Math.round((100 * event.loaded) / event.total),
-            fileName: file.name
-          }
-        }));
-      }).then(() => {
-        fetchFolderData(); // Refresh data
-        setUploadProgress(prev => {
-          const newProgress = { ...prev };
-          delete newProgress[uploadId];
-          return newProgress;
-        });
-      }).catch(err => {
-        console.error("Upload failed for", file.name, err);
-        setError(`Upload failed for ${file.name}`);
-        setUploadProgress(prev => {
-          const newProgress = { ...prev };
-          delete newProgress[uploadId];
-          return newProgress;
-        });
-      });
+    const validFiles = acceptedFiles.filter(file => {
+        if (file.size > maxUploadSize) {
+            setError(`File ${file.name} exceeds the maximum limit of ${Math.round(maxUploadSize / 1024 / 1024)}MB.`);
+            return false;
+        }
+        return true;
     });
+
+    if (validFiles.length > 0) {
+        setIsUploading(true);
+        setError('');
+        imageService.uploadImages(validFiles, folderId)
+            .then(() => {
+                fetchFolderData(); // Refresh data
+            })
+            .catch(err => {
+                console.error("Upload failed", err);
+                setError(`Upload failed. Please try again.`);
+            })
+            .finally(() => {
+                setIsUploading(false);
+            });
+    }
   }, [folderId, fetchFolderData, maxUploadSize]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: 'image/*' });
@@ -109,7 +101,7 @@ const FolderDetail = () => {
           <input {...getInputProps()} />
           <div className="flex flex-col items-center">
             <svg className="w-16 h-16 text-indigo-400 dark:text-indigo-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path><path d="M12 12v9"></path><path d="M16 16l-4-4-4 4"></path></path></svg>
-            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">{t('folder_detail.dropzone_title')}</p>
+            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">{isUploading ? t('folder_detail.uploading') : t('folder_detail.dropzone_title')}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('folder_detail.dropzone_subtitle', { maxSize: Math.round(maxUploadSize / 1024 / 1024) })}</p>
           </div>
         </div>
@@ -123,20 +115,14 @@ const FolderDetail = () => {
         </button>
       </div>
 
-      {/* Upload Progress */}
-      {Object.keys(uploadProgress).length > 0 && (
-        <div className="mb-8 space-y-2">
-          {Object.entries(uploadProgress).map(([id, { progress, fileName }]) => (
-            <div key={id}>
-              <p className="text-sm text-gray-600 dark:text-gray-300">{fileName}</p>
+      {isUploading && (
+          <div className="mb-8">
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                <div className="bg-indigo-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style={{ width: `${progress}%` }}>
-                  {progress}%
-                </div>
+                  <div className="bg-indigo-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style={{ width: `100%` }}>
+                      {t('folder_detail.uploading')}
+                  </div>
               </div>
-            </div>
-          ))}
-        </div>
+          </div>
       )}
 
       {/* Image Gallery */}
