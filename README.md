@@ -64,6 +64,9 @@ npm install pm2 -g
     CREATE DATABASE imparadise;
     CREATE USER imparadise_user WITH ENCRYPTED PASSWORD 'your_db_password';
     GRANT ALL PRIVILEGES ON DATABASE imparadise TO imparadise_user;
+    -- Connect to the database to grant schema privileges
+    \c imparadise
+    GRANT ALL ON SCHEMA public TO imparadise_user;
     \q 
     ```
 

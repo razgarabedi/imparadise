@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -7,92 +7,43 @@ import FolderDetail from './components/FolderDetail';
 import AdminDashboard from './components/AdminDashboard';
 import authService from './services/authService';
 import PrivateRoute from './components/PrivateRoute';
-
-function Home() {
-  return <h2>Home</h2>;
-}
+import Navbar from './components/Navbar';
+import HomePage from './components/HomePage';
+import PublicFolderPage from './components/PublicFolderPage';
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(undefined);
+  const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
 
-  useEffect(() => {
-    const user = authService.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-    }
-  }, []);
+  const navigate = useNavigate();
 
   const logOut = () => {
     authService.logout();
     setCurrentUser(undefined);
+    navigate('/');
   };
-
+  
   return (
-    <Router>
-      <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            {currentUser ? (
-              <>
-                <li>
-                  <a href="/" onClick={logOut}>
-                    Logout
-                  </a>
-                </li>
-                {currentUser.role === 'admin' && (
-                  <li>
-                    <Link to="/admin">Admin</Link>
-                  </li>
-                )}
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link to="/login">Login</Link>
-                </li>
-                <li>
-                  <Link to="/register">Register</Link>
-                </li>
-              </>
-            )}
-          </ul>
-        </nav>
-        <hr />
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-200">
+      <Navbar currentUser={currentUser} logOut={logOut} />
+      <main>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/folders/:folderId"
-            element={
-              <PrivateRoute>
-                <FolderDetail />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <PrivateRoute>
-                <AdminDashboard />
-              </PrivateRoute>
-            }
-          />
+          <Route path="/" element={currentUser ? <Navigate to="/dashboard" /> : <HomePage />} />
+          <Route path="/login" element={currentUser ? <Navigate to="/dashboard" /> : <Login />} />
+          <Route path="/register" element={currentUser ? <Navigate to="/dashboard" /> : <Register />} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/folders/:folderId" element={<PrivateRoute><FolderDetail /></PrivateRoute>} />
+          <Route path="/public/folders/:folderId" element={<PublicFolderPage />} />
+          <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
         </Routes>
-      </div>
-    </Router>
+      </main>
+    </div>
   );
 }
 
-export default App;
+const AppWrapper = () => (
+  <Router>
+    <App />
+  </Router>
+);
+
+export default AppWrapper;
