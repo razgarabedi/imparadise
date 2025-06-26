@@ -24,6 +24,18 @@ app.use('/api/images', imageRoutes);
 const adminRoutes = require('./routes/adminRoutes');
 app.use('/api/admin', adminRoutes);
 
+const Setting = require('./models/Setting');
+app.get('/api/public-settings', async (req, res) => {
+  try {
+    const keys = ['website_name', 'website_logo_url', 'homepage_image_url'];
+    const settings = await Setting.getMultiple(keys);
+    res.json(settings);
+  } catch (error) {
+    console.error('Error fetching site settings:', error);
+    res.status(500).json({ message: 'Error fetching site settings' });
+  }
+});
+
 app.get('/', (req, res) => {
   res.send('Hello from backend!');
 });

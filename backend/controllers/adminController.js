@@ -44,21 +44,36 @@ exports.getSettings = async (req, res) => {
     const settings = await Setting.getAll();
     res.json(settings);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching settings.' });
+    res.status(500).json({ message: 'Error fetching settings' });
   }
 };
 
 exports.updateSetting = async (req, res) => {
-  const { key } = req.params;
-  const { value } = req.body;
-
   try {
-    const updatedSetting = await Setting.update(key, value);
-    if (!updatedSetting) {
-        return res.status(404).json({ error: 'Setting not found.' });
-    }
-    res.json(updatedSetting);
+    const { key, value } = req.body;
+    await Setting.update(key, value);
+    res.json({ message: 'Setting updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Error updating setting.' });
+    res.status(500).json({ message: 'Error updating setting', error: error.message });
+  }
+};
+
+exports.uploadSettingImage = async (req, res) => {
+  try {
+    const { settingKey } = req.body;
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided.' });
+    }
+    if (!['website_logo_url', 'homepage_image_url'].includes(settingKey)) {
+      return res.status(400).json({ message: 'Invalid setting key for image upload.' });
+    }
+
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    await Setting.update(settingKey, imageUrl);
+
+    res.json({ imageUrl });
+  } catch (error) {
+    console.error('Error uploading setting image:', error);
+    res.status(500).json({ message: 'Error uploading image', error: error.message });
   }
 }; 

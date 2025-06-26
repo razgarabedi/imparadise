@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import folderService from '../services/folderService';
 
 const CreateFolderModal = ({ isOpen, onClose, onFolderCreated }) => {
   const [folderName, setFolderName] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,10 +37,10 @@ const CreateFolderModal = ({ isOpen, onClose, onFolderCreated }) => {
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">
-                    Create New Folder
+                    {t('modals.create_folder_title')}
                   </h3>
                   <div className="mt-4 w-full">
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Folder Name</label>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modals.folder_name')}</label>
                     <input
                       type="text"
                       name="name"
@@ -57,7 +59,7 @@ const CreateFolderModal = ({ isOpen, onClose, onFolderCreated }) => {
                         onChange={(e) => setIsPublic(e.target.checked)}
                         className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Publicly accessible</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('modals.publicly_accessible')}</span>
                     </label>
                   </div>
                 </div>
@@ -69,14 +71,14 @@ const CreateFolderModal = ({ isOpen, onClose, onFolderCreated }) => {
                 type="submit"
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
               >
-                Create
+                {t('modals.create_button')}
               </button>
               <button
                 type="button"
                 onClick={onClose}
                 className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-500 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               >
-                Cancel
+                {t('modals.cancel_button')}
               </button>
             </div>
           </form>

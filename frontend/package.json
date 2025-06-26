@@ -10,10 +10,13 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.10.0",
     "concurrently": "^9.2.0",
+    "i18next": "^25.2.1",
+    "i18next-browser-languagedetector": "^8.2.0",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
+    "react-i18next": "^15.5.3",
     "react-router-dom": "^6.25.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
@@ -26,6 +29,7 @@
     "build:css": "npx tailwindcss -i ./src/index.css -o ./src/tailwind.css",
     "watch:css": "npx tailwindcss -i ./src/index.css -o ./src/tailwind.css --watch"
   },
+  "proxy": "http://localhost:5000",
   "eslintConfig": {
     "extends": [
       "react-app",

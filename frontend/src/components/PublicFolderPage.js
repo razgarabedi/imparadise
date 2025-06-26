@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import folderService from '../services/folderService';
 import imageService from '../services/imageService';
 import ImagePreviewModal from './ImagePreviewModal';
@@ -11,6 +12,7 @@ const PublicFolderPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
+  const { t } = useTranslation();
 
   const fetchPublicFolderData = useCallback(async () => {
     try {
@@ -71,7 +73,7 @@ const PublicFolderPage = () => {
         </div>
       ) : (
         <div className="text-center py-16">
-          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">This folder is empty.</h3>
+          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">{t('public_folder.empty_folder')}</h3>
         </div>
       )}
 
@@ -79,6 +81,7 @@ const PublicFolderPage = () => {
         isOpen={!!selectedImage}
         onClose={() => setSelectedImage(null)}
         image={selectedImage}
+        handleDownload={handleDownload}
       />
     </div>
   );

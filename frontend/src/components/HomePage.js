@@ -1,28 +1,110 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
+import { useSettings } from '../contexts/SettingsContext';
 
 const HomePage = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { settings, loading } = useSettings();
+  
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      await authService.login(username, password);
+      navigate('/dashboard');
+      window.location.reload();
+    } catch (err) {
+      const resMessage =
+        (err.response &&
+          err.response.data &&
+          err.response.data.message) ||
+        err.message ||
+        err.toString();
+      setError(resMessage);
+    }
+  };
+
+  if (loading) {
+    return <div>{t('loading')}</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center text-center px-4">
-      <h1 className="text-5xl font-extrabold text-gray-900 mb-4">
-        Welcome to Imparadise
-      </h1>
-      <p className="text-xl text-gray-600 mb-8 max-w-2xl">
-        Your personal cloud storage solution. Upload, organize, and share your images from anywhere in the world, securely and efficiently.
-      </p>
-      <div>
-        <Link 
-          to="/register" 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-md shadow-lg transition-transform transform hover:scale-105"
-        >
-          Get Started for Free
-        </Link>
-        <p className="mt-4 text-sm text-gray-500">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign In
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 p-10 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+        <div>
+          {settings.homepage_image_url && (
+            <img 
+              className="mx-auto h-48 w-auto object-cover rounded-lg" 
+              src={settings.homepage_image_url} 
+              alt="Homepage" 
+            />
+          )}
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+            {t('login.title')}
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          <input type="hidden" name="remember" defaultValue="true" />
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="username" className="sr-only">{t('login.username_or_email')}</label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder={t('login.username_or_email')}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">{t('login.password')}</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder={t('login.password')}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <p className="mt-2 text-center text-sm text-red-600 dark:text-red-400">
+              {error}
+            </p>
+          )}
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              {t('login.button')}
+            </button>
+          </div>
+        </form>
+        <div className="text-sm text-center">
+          <span className="text-gray-600 dark:text-gray-400">{t('login.or_create_account_pre')} </span>
+          <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            {t('login.or_create_account_link')}
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

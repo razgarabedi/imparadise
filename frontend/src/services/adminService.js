@@ -20,7 +20,20 @@ const getSettings = () => {
 };
 
 const updateSetting = (key, value) => {
-  return axios.put(API_URL + `settings/${key}`, { value }, { headers: authHeader() });
+  return axios.put(API_URL + 'settings', { key, value }, { headers: authHeader() });
+};
+
+const uploadSettingImage = (settingKey, file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('settingKey', settingKey);
+
+  return axios.post(API_URL + 'settings/upload', formData, {
+    headers: {
+      ...authHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 };
 
 const adminService = {
@@ -29,6 +42,7 @@ const adminService = {
   deleteUser,
   getSettings,
   updateSetting,
+  uploadSettingImage,
 };
 
 export default adminService; 

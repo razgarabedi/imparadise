@@ -1,0 +1,90 @@
+{
+  "navbar": {
+    "title": "Imparadise",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden"
+  },
+  "login": {
+    "title": "Melden Sie sich bei Ihrem Konto an",
+    "or_create_account_pre": "Oder",
+    "or_create_account_link": "erstellen Sie ein neues Konto",
+    "username_or_email": "Benutzername oder E-Mail",
+    "password": "Passwort",
+    "signin": "Anmelden",
+    "failed_login": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
+  },
+  "register": {
+    "title": "Erstellen Sie ein neues Konto",
+    "or_signin_pre": "Oder",
+    "or_signin_link": "melden Sie sich bei Ihrem Konto an",
+    "username": "Benutzername",
+    "email": "E-Mail-Addresse",
+    "password": "Passwort",
+    "register": "Registrieren",
+    "failed_register": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "dashboard": {
+    "title": "Ihre Ordner",
+    "create_folder": "Ordner erstellen",
+    "no_folders_title": "Noch keine Ordner",
+    "no_folders_subtitle": "Erstellen Sie Ihren ersten Ordner, um loszulegen.",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "copied": "Kopiert!"
+  },
+  "folder_detail": {
+    "upload_title": "Bild(er) in \"{{folderName}}\" hochladen",
+    "upload_subtitle": "Dateien per Drag & Drop verschieben oder klicken, um sie auszuwählen. Max. {{maxSize}}MB pro Datei.",
+    "dropzone_title": "Bilder hier ablegen oder zum Durchsuchen klicken",
+    "dropzone_subtitle": "Unterstützt JPG, PNG, GIF, etc. Max. {{maxSize}}MB pro Datei.",
+    "upload_button": "Hochladen",
+    "download_button": "Herunterladen",
+    "delete_button": "Löschen"
+  },
+  "public_folder": {
+    "empty_folder": "Dieser Ordner ist leer."
+  },
+  "admin": {
+    "title": "Admin-Dashboard",
+    "user_management": "Benutzerverwaltung",
+    "app_settings": "Anwendungseinstellungen",
+    "users": {
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "actions": "Aktionen",
+      "make_admin": "Zum Admin machen",
+      "make_user": "Zum Benutzer machen",
+      "delete_user_confirm": "Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?"
+    },
+    "settings": {
+      "title": "Anwendungseinstellungen",
+      "website_name": "Name der Webseite",
+      "website_logo_url": "Webseiten-Logo",
+      "homepage_image_url": "Homepage-Bild",
+      "allow_registration": "Registrierung erlauben",
+      "max_upload_size": "Maximale Upload-Größe",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "bytes_info": "Wert in Bytes. z.B. 10485760 für 10MB",
+      "save_settings": "Einstellungen speichern",
+      "success_message": "Einstellungen erfolgreich aktualisiert!",
+      "error_message": "Fehler beim Aktualisieren einer oder mehrerer Einstellungen."
+    }
+  },
+  "modals": {
+    "create_folder_title": "Neuen Ordner erstellen",
+    "edit_folder_title": "Ordner bearbeiten",
+    "delete_folder_title": "Ordner löschen",
+    "folder_name": "Ordnername",
+    "publicly_accessible": "Öffentlich zugänglich",
+    "create_button": "Erstellen",
+    "save_button": "Änderungen speichern",
+    "cancel_button": "Abbrechen",
+    "delete_button": "Löschen",
+    "delete_folder_confirm": "Sind Sie sicher, dass Sie den Ordner \"{{folderName}}\" löschen möchten? Alle Inhalte werden dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden."
+  }
+} 

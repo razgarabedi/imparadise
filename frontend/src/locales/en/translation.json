@@ -1,0 +1,90 @@
+{
+  "navbar": {
+    "title": "Imparadise",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "login": {
+    "title": "Sign in to your account",
+    "or_create_account_pre": "Or",
+    "or_create_account_link": "create a new account",
+    "username_or_email": "Username or Email",
+    "password": "Password",
+    "signin": "Sign in",
+    "failed_login": "Failed to login. Please check your credentials."
+  },
+  "register": {
+    "title": "Create a new account",
+    "or_signin_pre": "Or",
+    "or_signin_link": "sign in to your account",
+    "username": "Username",
+    "email": "Email address",
+    "password": "Password",
+    "register": "Register",
+    "failed_register": "Failed to register. Please try again."
+  },
+  "dashboard": {
+    "title": "Your Folders",
+    "create_folder": "Create Folder",
+    "no_folders_title": "No folders yet",
+    "no_folders_subtitle": "Get started by creating your first folder.",
+    "public": "Public",
+    "private": "Private",
+    "copied": "Copied!"
+  },
+  "folder_detail": {
+    "upload_title": "Upload Image(s) to \"{{folderName}}\"",
+    "upload_subtitle": "Drag & drop or click to select files. Max {{maxSize}}MB per file.",
+    "dropzone_title": "Drop images here or click to browse",
+    "dropzone_subtitle": "Supports JPG, PNG, GIF, etc. Max {{maxSize}}MB per file.",
+    "upload_button": "Upload",
+    "download_button": "Download",
+    "delete_button": "Delete"
+  },
+  "public_folder": {
+    "empty_folder": "This folder is empty."
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "user_management": "User Management",
+    "app_settings": "Application Settings",
+    "users": {
+      "username": "Username",
+      "email": "Email",
+      "role": "Role",
+      "actions": "Actions",
+      "make_admin": "Make Admin",
+      "make_user": "Make User",
+      "delete_user_confirm": "Are you sure you want to delete this user?"
+    },
+    "settings": {
+      "title": "Application Settings",
+      "website_name": "Website Name",
+      "website_logo_url": "Website Logo",
+      "homepage_image_url": "Homepage Image",
+      "allow_registration": "Allow Registration",
+      "max_upload_size": "Max Upload Size",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "bytes_info": "Value in bytes. e.g. 10485760 for 10MB",
+      "save_settings": "Save Settings",
+      "success_message": "Settings updated successfully!",
+      "error_message": "Failed to update one or more settings."
+    }
+  },
+  "modals": {
+    "create_folder_title": "Create New Folder",
+    "edit_folder_title": "Edit Folder",
+    "delete_folder_title": "Delete folder",
+    "folder_name": "Folder Name",
+    "publicly_accessible": "Publicly accessible",
+    "create_button": "Create",
+    "save_button": "Save Changes",
+    "cancel_button": "Cancel",
+    "delete_button": "Delete",
+    "delete_folder_confirm": "Are you sure you want to delete the folder \"{{folderName}}\"? All of its contents will be permanently removed. This action cannot be undone."
+  }
+} 

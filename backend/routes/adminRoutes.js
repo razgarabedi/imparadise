@@ -6,9 +6,11 @@ const {
   deleteUser,
   getSettings,
   updateSetting,
+  uploadSettingImage,
 } = require('../controllers/adminController');
 const { authenticateToken } = require('../middleware/authMiddleware');
 const { authorizeRole } = require('../middleware/roleMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 // All routes in this file are for admins only
 router.use(authenticateToken);
@@ -21,6 +23,7 @@ router.delete('/users/:userId', deleteUser);
 
 // Settings management
 router.get('/settings', getSettings);
-router.put('/settings/:key', updateSetting);
+router.put('/settings', updateSetting);
+router.post('/settings/upload', upload.single('image'), uploadSettingImage);
 
 module.exports = router; 

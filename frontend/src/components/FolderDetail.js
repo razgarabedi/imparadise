@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
+import { useTranslation } from 'react-i18next';
 import folderService from '../services/folderService';
 import imageService from '../services/imageService';
 import adminService from '../services/adminService';
@@ -13,8 +14,9 @@ const FolderDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [uploadProgress, setUploadProgress] = useState({});
-  const [maxUploadSize, setMaxUploadSize] = useState(5 * 1024 * 1024); // Default 5MB
+  const [maxUploadSize, setMaxUploadSize] = useState(10485760); // Default 10MB
   const [selectedImage, setSelectedImage] = useState(null);
+  const { t } = useTranslation();
 
   const fetchFolderData = useCallback(async () => {
     try {
@@ -100,8 +102,8 @@ const FolderDetail = () => {
       {/* Uploader Component */}
       <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mb-8">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Upload Image(s) to "{folder?.name}"</h2>
-          <p className="text-gray-500 dark:text-gray-400">Drag & drop or click to select files. Max {Math.round(maxUploadSize / 1024 / 1024)}MB per file.</p>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{t('folder_detail.upload_title', { folderName: folder?.name })}</h2>
+          <p className="text-gray-500 dark:text-gray-400">{t('folder_detail.upload_subtitle', { maxSize: Math.round(maxUploadSize / 1024 / 1024) })}</p>
         </div>
         <div 
           {...getRootProps()} 
@@ -110,8 +112,8 @@ const FolderDetail = () => {
           <input {...getInputProps()} />
           <div className="flex flex-col items-center">
             <svg className="w-16 h-16 text-indigo-400 dark:text-indigo-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path><path d="M12 12v9"></path><path d="M16 16l-4-4-4 4"></path></path></svg>
-            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">Drop images here or click to browse</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Supports JPG, PNG, GIF, etc. Max {Math.round(maxUploadSize / 1024 / 1024)}MB per file.</p>
+            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">{t('folder_detail.dropzone_title')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('folder_detail.dropzone_subtitle', { maxSize: Math.round(maxUploadSize / 1024 / 1024) })}</p>
           </div>
         </div>
         <button 
