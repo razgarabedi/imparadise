@@ -170,7 +170,7 @@ exports.deleteImage = async (req, res) => {
     }
 };
 
-exports.downloadSelectedImages = async (req, res) => {
+exports.downloadBulkImages = async (req, res) => {
     const { imageIds } = req.body;
     const user = req.user;
 
@@ -180,10 +180,29 @@ exports.downloadSelectedImages = async (req, res) => {
 
     try {
         const images = await Image.findByIds(imageIds);
+        if (images.length === 0) {
+            return res.status(404).json({ error: 'No images found for the given IDs.' });
+        }
         
-        const isOwnerOrAdmin = images.every(img => img.user_id === user.id || user.role === 'admin');
-        if (!isOwnerOrAdmin) {
-            return res.status(403).json({ error: 'Forbidden: You do not have permission to download one or more of these images.' });
+        if (user) {
+            // User is authenticated, check ownership or admin role
+            const isOwnerOrAdmin = images.every(img => img.user_id === user.id || user.role === 'admin');
+            if (!isOwnerOrAdmin) {
+                return res.status(403).json({ error: 'Forbidden: You do not have permission to download one or more of these images.' });
+            }
+        } else {
+            // User is not authenticated, check if all images are in a public folder
+            const firstImage = images[0];
+            const folder = await Folder.findById(firstImage.folder_id);
+
+            if (!folder || !folder.is_public) {
+                return res.status(403).json({ error: 'Forbidden: You must be logged in to download images from a private folder.' });
+            }
+
+            const allInSamePublicFolder = images.every(img => img.folder_id === folder.id);
+            if (!allInSamePublicFolder) {
+                return res.status(400).json({ error: 'All images must belong to the same public folder for bulk download.' });
+            }
         }
         
         const uploadsDir = path.join(__dirname, '..', 'uploads');

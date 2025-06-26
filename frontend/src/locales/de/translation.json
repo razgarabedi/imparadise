@@ -48,7 +48,14 @@
     "uploading": "Lädt hoch...",
     "delete_selected": "Ausgewählte löschen",
     "select_all_on_page": "Alle auf dieser Seite auswählen",
-    "unselect_all_on_page": "Auswahl auf dieser Seite aufheben"
+    "unselect_all_on_page": "Auswahl auf dieser Seite aufheben",
+    "selected_count": "{{count}} ausgewählt",
+    "download_error": "Fehler beim Herunterladen der ausgewählten Bilder.",
+    "download_selected": "Ausgewählte herunterladen",
+    "deselect_all_on_page": "Auswahl für alle auf der Seite aufheben",
+    "gallery_title": "Galerie",
+    "confirm_delete": "Sind Sie sicher, dass Sie dieses Bild löschen möchten?",
+    "download_all": "Alle herunterladen"
   },
   "public_folder": {
     "empty_folder": "Dieser Ordner ist leer."

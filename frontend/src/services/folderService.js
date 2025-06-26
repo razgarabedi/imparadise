@@ -27,6 +27,13 @@ const deleteFolder = (id) => {
   return axios.delete(API_URL + id, { headers: authHeader() });
 };
 
+const downloadFolder = (id) => {
+  return axios.get(API_URL + id + '/download', {
+    headers: authHeader(),
+    responseType: 'blob',
+  });
+};
+
 const folderService = {
   createFolder,
   getFolders,
@@ -34,6 +41,7 @@ const folderService = {
   getFolderById,
   updateFolder,
   deleteFolder,
+  downloadFolder,
 };
 
 export default folderService; 

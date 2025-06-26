@@ -68,7 +68,7 @@ const ImagePreviewModal = ({ isOpen, onClose, image, onDelete, handleDownload, o
         {onPrevious && (
           <button
             onClick={handlePreviousClick}
-            className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none hidden sm:block"
+            className="absolute left-[-50px] top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none hidden sm:block"
             aria-label="Previous"
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -107,7 +107,7 @@ const ImagePreviewModal = ({ isOpen, onClose, image, onDelete, handleDownload, o
         {onNext && (
           <button
             onClick={handleNextClick}
-            className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none hidden sm:block"
+            className="absolute right-[-50px] top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none hidden sm:block"
             aria-label="Next"
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>

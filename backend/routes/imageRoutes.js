@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { uploadImage, deleteImage, downloadSelectedImages } = require('../controllers/imageController');
+const { uploadImage, deleteImage, downloadBulkImages } = require('../controllers/imageController');
 const { authenticateToken } = require('../middleware/authMiddleware');
 const { authorizeRole } = require('../middleware/roleMiddleware');
+const { optionalAuth } = require('../middleware/optionalAuth');
 const upload = require('../middleware/uploadMiddleware');
 
 router.post(
@@ -21,10 +22,9 @@ router.delete(
 );
 
 router.post(
-  '/download-selected',
-  authenticateToken,
-  authorizeRole(['user', 'admin']),
-  downloadSelectedImages
+  '/download/bulk',
+  optionalAuth,
+  downloadBulkImages
 );
 
 module.exports = router; 

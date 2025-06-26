@@ -1,40 +1,41 @@
-const pool = require('../config/db');
+const db = require('../config/db');
 
 const Folder = {
   async create(name, userId, isPublic = false) {
-    const res = await pool.query(
-      'INSERT INTO folders (name, user_id, is_public) VALUES ($1, $2, $3) RETURNING *',
+    const { rows } = await db.query(
+      'INSERT INTO folders (name, user_id, is_public) VALUES ($1, $2, $3) RETURNING id',
       [name, userId, isPublic]
     );
-    return res.rows[0];
+    const id = rows[0].id;
+    return { id, name, user_id: userId, is_public: isPublic };
   },
 
   async findByUserId(userId) {
-    const res = await pool.query('SELECT * FROM folders WHERE user_id = $1', [userId]);
-    return res.rows;
+    const { rows } = await db.query('SELECT * FROM folders WHERE user_id = $1', [userId]);
+    return rows;
   },
 
   async findById(folderId) {
-    const res = await pool.query('SELECT * FROM folders WHERE id = $1', [folderId]);
-    return res.rows[0];
+    const { rows } = await db.query('SELECT * FROM folders WHERE id = $1', [folderId]);
+    return rows[0];
   },
 
   async findAllPublic() {
-    const res = await pool.query('SELECT * FROM folders WHERE is_public = TRUE');
-    return res.rows;
+    const { rows } = await db.query('SELECT * FROM folders WHERE is_public = TRUE');
+    return rows;
   },
 
   async update(folderId, name, isPublic) {
-    const res = await pool.query(
-      'UPDATE folders SET name = $1, is_public = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
+    await db.query(
+      'UPDATE folders SET name = $1, is_public = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
       [name, isPublic, folderId]
     );
-    return res.rows[0];
+    return { id: folderId, name, is_public: isPublic };
   },
 
   async delete(folderId) {
-    const res = await pool.query('DELETE FROM folders WHERE id = $1 RETURNING *', [folderId]);
-    return res.rows[0];
+    await db.query('DELETE FROM folders WHERE id = $1', [folderId]);
+    return { id: folderId };
   },
 };
 

@@ -208,6 +208,49 @@ const FolderDetail = () => {
     }
   };
 
+  const handleDownloadSelected = async () => {
+    if (selectedImages.length === 0) return;
+    try {
+      const response = await imageService.downloadImages({ imageIds: selectedImages });
+      
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const folderName = folder.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.setAttribute('download', `${folderName || 'images'}-selected.zip`);
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(t('folder_detail.download_error'));
+      console.error("Download failed", err);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    try {
+      const response = await folderService.downloadFolder(folderId);
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const folderName = folder.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.setAttribute('download', `${folderName || 'images'}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(t('folder_detail.download_error'));
+      console.error("Download failed", err);
+    }
+  };
+
   const openImagePreview = (image) => {
     const index = images.findIndex(img => img.id === image.id);
     setCurrentImageIndex(index);
@@ -297,15 +340,33 @@ const FolderDetail = () => {
         <button
           onClick={handleDeleteSelected}
           disabled={selectedImages.length === 0}
-          className="bg-danger hover:bg-danger-hover text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+          className="bg-danger hover:bg-danger-hover text-white font-medium py-1 px-3 rounded disabled:opacity-50"
         >
           {`${t('folder_detail.delete_selected')} (${selectedImages.length})`}
         </button>
         <button
+          onClick={handleDownloadSelected}
+          disabled={selectedImages.length === 0}
+          className="bg-primary hover:bg-primary-dark text-white font-medium py-1 px-3 rounded disabled:opacity-50"
+        >
+          {t('folder_detail.download_selected')}
+        </button>
+        <button
           onClick={selectAllOnPage}
-          className="bg-muted text-text font-bold py-2 px-4 rounded"
+          className="bg-muted text-text font-medium py-1 px-3 rounded"
         >
           {paginatedImages.every((img) => selectedImages.includes(img.id)) ? t('folder_detail.unselect_all_on_page') : t('folder_detail.select_all_on_page')}
+        </button>
+      </div>
+
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-bold text-text">{t('folder_detail.gallery_title')}</h3>
+        <button
+          onClick={handleDownloadAll}
+          className="bg-accent hover:bg-accent-hover text-white font-medium py-1 px-3 rounded"
+          disabled={images.length === 0}
+        >
+          {t('folder_detail.download_all')}
         </button>
       </div>
 

@@ -1,4 +1,8 @@
 const Folder = require('../models/Folder');
+const Image = require('../models/Image');
+const path = require('path');
+const fs = require('fs');
+const archiver = require('archiver');
 
 exports.createFolder = async (req, res) => {
   const { name, isPublic } = req.body;
@@ -95,5 +99,49 @@ exports.getFolderById = async (req, res) => {
     res.json(folder);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching folder.' });
+  }
+};
+
+exports.downloadFolder = async (req, res) => {
+  const { id } = req.params;
+  const user = req.user;
+
+  try {
+    const folder = await Folder.findById(id);
+    if (!folder) {
+      return res.status(404).json({ error: 'Folder not found.' });
+    }
+
+    const isOwner = user && folder.user_id === user.id;
+    const isAdmin = user && user.role === 'admin';
+
+    if (!folder.is_public && !isOwner && !isAdmin) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to download this folder.' });
+    }
+
+    const images = await Image.findByFolderId(id);
+    if (images.length === 0) {
+      return res.status(404).json({ error: 'This folder is empty.' });
+    }
+
+    const archive = archiver('zip', {
+      zlib: { level: 9 }
+    });
+
+    res.attachment(`${folder.name}.zip`);
+    archive.pipe(res);
+
+    const uploadsDir = path.join(__dirname, '..', 'uploads');
+    for (const image of images) {
+      const imagePath = path.join(uploadsDir, image.stored_filename);
+      if (fs.existsSync(imagePath)) {
+        archive.file(imagePath, { name: image.filename });
+      }
+    }
+
+    archive.finalize();
+  } catch (error) {
+    console.error("Error downloading folder:", error);
+    res.status(500).json({ error: 'Error preparing folder for download.' });
   }
 }; 

@@ -16,6 +16,7 @@ const PublicFolderPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [imagesPerPage, setImagesPerPage] = useState(15);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(null);
 
   const fetchPublicFolderData = useCallback(async () => {
     try {
@@ -98,50 +99,112 @@ const PublicFolderPage = () => {
     });
   };
 
-  // Delete selected images
-  const handleDeleteSelected = async () => {
+  const handleDownloadSelected = async () => {
     if (selectedImages.length === 0) return;
-    if (!window.confirm(`Are you sure you want to delete ${selectedImages.length} image(s)?`)) return;
     try {
-      for (const imageId of selectedImages) {
-        await imageService.deleteImage(imageId);
-      }
-      setSelectedImages([]);
-      fetchPublicFolderData();
+      const response = await imageService.downloadImages({ imageIds: selectedImages });
+      
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const folderName = folder.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.setAttribute('download', `${folderName || 'images'}.zip`);
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
-      setError('Failed to delete selected images.');
+      setError(t('folder_detail.download_error'));
+      console.error("Download failed", err);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    try {
+      const response = await folderService.downloadFolder(folderId);
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const folderName = folder.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.setAttribute('download', `${folderName || 'images'}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(t('folder_detail.download_error'));
+      console.error("Download failed", err);
     }
   };
 
   if (loading) return <div className="text-center mt-10">{t('loading')}</div>;
   if (error) return <div className="text-center mt-10 text-danger">{error}</div>;
 
+  const openImagePreview = (image) => {
+    const index = images.findIndex(img => img.id === image.id);
+    setCurrentImageIndex(index);
+    setSelectedImage(image);
+  };
+
+  const closeImagePreview = () => {
+    setSelectedImage(null);
+    setCurrentImageIndex(null);
+  };
+
+  const handleNext = () => {
+    if (currentImageIndex === null) return;
+    const nextIndex = (currentImageIndex + 1) % images.length;
+    setSelectedImage(images[nextIndex]);
+    setCurrentImageIndex(nextIndex);
+  };
+
+  const handlePrevious = () => {
+    if (currentImageIndex === null) return;
+    const nextIndex = (currentImageIndex - 1 + images.length) % images.length;
+    setSelectedImage(images[nextIndex]);
+    setCurrentImageIndex(nextIndex);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h2 className="text-3xl font-bold text-center mb-8 text-text">{folder?.name}</h2>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-text">{folder?.name}</h2>
+        <button
+          onClick={handleDownloadAll}
+          className="bg-accent hover:bg-accent-hover text-white font-medium py-1 px-3 rounded"
+          disabled={images.length === 0}
+        >
+          {t('folder_detail.download_all')}
+        </button>
+      </div>
       
       {images.length > 0 ? (
         <>
         {/* Bulk Actions */}
         <div className="flex items-center mb-4 gap-2">
-          <button
-            onClick={handleDeleteSelected}
-            disabled={selectedImages.length === 0}
-            className="bg-danger hover:bg-danger-hover text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-          >
-            {`${t('folder_detail.delete_selected')} (${selectedImages.length})`}
-          </button>
-          <button
-            onClick={selectAllOnPage}
-            className="bg-muted text-text font-bold py-2 px-4 rounded"
-          >
-            {paginatedImages.every((img) => selectedImages.includes(img.id)) ? t('folder_detail.unselect_all_on_page') : t('folder_detail.select_all_on_page')}
-          </button>
+            <button
+                onClick={handleDownloadSelected}
+                disabled={selectedImages.length === 0}
+                className="bg-primary hover:bg-primary-dark text-white font-medium py-1 px-3 rounded disabled:opacity-50"
+            >
+                {`${t('folder_detail.download_selected')} (${selectedImages.length})`}
+            </button>
+            <button
+                onClick={selectAllOnPage}
+                className="bg-muted text-text font-medium py-1 px-3 rounded"
+            >
+                {paginatedImages.every((img) => selectedImages.includes(img.id)) ? t('folder_detail.unselect_all_on_page') : t('folder_detail.select_all_on_page')}
+            </button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {paginatedImages.map((image) => (
             <div key={image.id} className="bg-background rounded-lg shadow-md overflow-hidden flex flex-col">
-              <div className="cursor-pointer relative" onClick={() => setSelectedImage(image)}>
+              <div className="cursor-pointer relative" onClick={() => openImagePreview(image)}>
                 <img 
                   src={image.thumbnail_url || image.url} 
                   alt={image.filename} 
@@ -208,9 +271,11 @@ const PublicFolderPage = () => {
       {selectedImage && (
         <ImagePreviewModal 
             isOpen={!!selectedImage}
-            onClose={() => setSelectedImage(null)}
+            onClose={closeImagePreview}
             image={selectedImage}
             handleDownload={handleDownload}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
         />
       )}
     </div>

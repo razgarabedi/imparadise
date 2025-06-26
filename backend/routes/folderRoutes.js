@@ -12,6 +12,7 @@ const { authorizeRole } = require('../middleware/roleMiddleware');
 router.get('/public', folderController.getPublicFolders);
 router.get('/:folderId', optionalAuth, folderController.getFolderById);
 router.get('/:folderId/images', optionalAuth, imageController.getImagesInFolder);
+router.get('/:id/download', optionalAuth, folderController.downloadFolder);
 
 
 // --- Authentication Middleware ---
