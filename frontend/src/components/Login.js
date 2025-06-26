@@ -71,6 +71,7 @@ const Login = () => {
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setShowPassword(!showPassword)}
                   className="text-muted hover:text-text focus:outline-none"
                 >
