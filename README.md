@@ -242,6 +242,9 @@ server {
     listen 80;
     server_name api.your_domain.com;
 
+    # Set the max upload size
+    client_max_body_size 20M;
+
     location / {
         proxy_pass http://localhost:5000; # Or 127.0.0.1:5000
         proxy_http_version 1.1;
