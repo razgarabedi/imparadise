@@ -37,8 +37,8 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+    <div className="min-h-screen flex items-center justify-center bg-muted py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 p-10 bg-background shadow-xl rounded-lg">
         <div>
           {settings.homepage_image_url && (
             <img 
@@ -47,7 +47,7 @@ const HomePage = () => {
               alt="Homepage" 
             />
           )}
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-text">
             {t('login.title')}
           </h2>
         </div>
@@ -62,7 +62,7 @@ const HomePage = () => {
                 type="text"
                 autoComplete="username"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-border placeholder-text-muted text-text bg-background rounded-t-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
                 placeholder={t('login.username_or_email')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -76,7 +76,7 @@ const HomePage = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-border placeholder-text-muted text-text bg-background rounded-b-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
                 placeholder={t('login.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -85,7 +85,7 @@ const HomePage = () => {
           </div>
 
           {error && (
-            <p className="mt-2 text-center text-sm text-red-600 dark:text-red-400">
+            <p className="mt-2 text-center text-sm text-danger">
               {error}
             </p>
           )}
@@ -93,15 +93,15 @@ const HomePage = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-success-emphasis hover:bg-success-emphasis-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success"
             >
               {t('login.button')}
             </button>
           </div>
         </form>
         <div className="text-sm text-center">
-          <span className="text-gray-600 dark:text-gray-400">{t('login.or_create_account_pre')} </span>
-          <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <span className="text-muted">{t('login.or_create_account_pre')} </span>
+          <Link to="/register" className="font-medium text-accent hover:text-accent-hover">
             {t('login.or_create_account_link')}
           </Link>
         </div>

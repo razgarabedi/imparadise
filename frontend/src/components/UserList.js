@@ -39,27 +39,27 @@ const UserList = () => {
 
   return (
     <div>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <p className="text-danger mb-4">{error}</p>}
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+        <table className="min-w-full bg-background rounded-lg">
+          <thead className="bg-muted">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('admin.users.username')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('admin.users.email')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('admin.users.role')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('admin.users.actions')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">{t('admin.users.username')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">{t('admin.users.email')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">{t('admin.users.role')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">{t('admin.users.actions')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-border">
             {users.map((user) => (
               <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{user.username}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-text">{user.username}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{user.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                   <select
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    className="p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="p-2 border rounded-md bg-background text-text border-border focus:outline-none focus:ring-accent focus:border-accent"
                     disabled={user.role === 'admin' && users.filter(u => u.role === 'admin').length === 1}
                   >
                     <option value="user">{t('admin.users.make_user')}</option>
@@ -69,7 +69,7 @@ const UserList = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
                     onClick={() => handleDeleteUser(user.id)}
-                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
+                    className="text-danger hover:text-danger-hover"
                     disabled={user.role === 'admin' && users.filter(u => u.role === 'admin').length === 1}
                   >
                     {t('modals.delete_button')}

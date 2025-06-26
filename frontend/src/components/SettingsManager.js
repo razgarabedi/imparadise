@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import adminService from '../services/adminService';
 
@@ -13,7 +13,7 @@ const SettingsManager = () => {
 
   const backendUrl = 'http://localhost:5000';
 
-  const processSettings = (settingsData) => {
+  const processSettings = useCallback((settingsData) => {
     const processed = { ...settingsData };
     const imageKeys = ['website_logo_url', 'homepage_image_url'];
 
@@ -23,13 +23,9 @@ const SettingsManager = () => {
       }
     });
     return processed;
-  };
+  }, [backendUrl]);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = () => {
+  const fetchSettings = useCallback(() => {
     adminService.getSettings().then(response => {
       const settingsData = response.data.reduce((acc, setting) => ({ ...acc, [setting.key]: setting.value }), {});
       const finalSettings = processSettings(settingsData);
@@ -37,7 +33,11 @@ const SettingsManager = () => {
     }).catch(err => {
       setError("Failed to fetch settings.");
     });
-  };
+  }, [processSettings]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -93,13 +93,13 @@ const SettingsManager = () => {
       const ref = key === 'website_logo_url' ? logoInputRef : homepageImageInputRef;
       return (
         <div className="flex items-center space-x-4 mt-1">
-          {settings[key] && <img src={settings[key]} alt={key} className="w-24 h-auto bg-gray-100 dark:bg-gray-700 rounded"/>}
+          {settings[key] && <img src={settings[key]} alt={key} className="w-24 h-auto bg-muted rounded"/>}
           <input
             type="file"
             ref={ref}
             accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,.svg,.heic,.heif,.avif,.jxl,.jxr,.ico,.psd,.raw,.ppm,.pgm,.pbm"
             onChange={(e) => handleImageUpload(key, e.target.files[0])}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-muted file:text-accent hover:file:bg-accent-muted"
           />
         </div>
       );
@@ -112,7 +112,7 @@ const SettingsManager = () => {
           name={key}
           value={settings[key]}
           onChange={handleInputChange}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-background text-text focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-md"
         >
           <option value="true">{t('admin.settings.enabled')}</option>
           <option value="false">{t('admin.settings.disabled')}</option>
@@ -127,7 +127,7 @@ const SettingsManager = () => {
         name={key}
         value={settings[key]}
         onChange={handleInputChange}
-        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-md"
+        className="shadow-sm focus:ring-accent focus:border-accent block w-full sm:text-sm border-border bg-background text-text rounded-md"
       />
     );
   };
@@ -136,24 +136,24 @@ const SettingsManager = () => {
     <div>
       <h3 className="text-xl font-bold mb-4">{t('admin.settings.title')}</h3>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {message && <p className="text-green-500 dark:text-green-400">{message}</p>}
-        {error && <p className="text-red-500 dark:text-red-400">{error}</p>}
+        {message && <p className="text-success">{message}</p>}
+        {error && <p className="text-danger">{error}</p>}
 
         <div className="space-y-4">
           {Object.keys(settings).sort().map((key) => (
             <div key={key}>
-              <label htmlFor={key} className="block text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
+              <label htmlFor={key} className="block text-sm font-medium text-muted capitalize">
                 {t(`admin.settings.${key}`, { defaultValue: key.replace(/_/g, ' ') })}
               </label>
               {renderSettingInput(key)}
-              {key === 'max_upload_size' && <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('admin.settings.bytes_info')}</p>}
+              {key === 'max_upload_size' && <p className="mt-2 text-sm text-muted">{t('admin.settings.bytes_info')}</p>}
             </div>
           ))}
         </div>
 
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-success-emphasis hover:bg-success-emphasis-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success"
         >
           {t('admin.settings.save_settings')}
         </button>

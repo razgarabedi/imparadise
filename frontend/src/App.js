@@ -24,7 +24,7 @@ function App() {
   };
   
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-200 flex flex-col">
+    <div className="bg-background-muted min-h-screen text-text flex flex-col">
       <Navbar currentUser={currentUser} logOut={logOut} />
       <main className="flex-1">
         <Routes>
