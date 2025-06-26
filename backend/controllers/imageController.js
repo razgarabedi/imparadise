@@ -39,7 +39,8 @@ exports.uploadImage = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: You do not have permission to upload to this folder.' });
     }
 
-    const localUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const localUrl = `${protocol}://${req.get('host')}/uploads/${file.filename}`;
     
     const newImage = await Image.create(
       file.originalname,

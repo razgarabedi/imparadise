@@ -12,7 +12,7 @@ export const SettingsProvider = ({ children }) => {
     homepage_image_url: null,
   });
   const [loading, setLoading] = useState(true);
-  const backendUrl = 'http://localhost:5000';
+  const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   const processSettings = (settingsData) => {
     const processed = { ...settingsData };

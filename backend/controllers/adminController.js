@@ -68,12 +68,22 @@ exports.uploadSettingImage = async (req, res) => {
       return res.status(400).json({ message: 'Invalid setting key for image upload.' });
     }
 
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    console.log('--- Debugging Image Upload ---');
+    console.log('x-forwarded-proto Header:', req.headers['x-forwarded-proto']);
+    console.log('Host Header:', req.get('host'));
+    console.log('req.protocol:', req.protocol);
+
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const imageUrl = `${protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    
+    console.log('Generated Image URL:', imageUrl);
+    console.log('-----------------------------');
+
     await Setting.update(settingKey, imageUrl);
 
     res.json({ imageUrl });
   } catch (error) {
-    console.error('Error uploading setting image:', error);
+    console.error('Error uploading setting image:', error)
     res.status(500).json({ message: 'Error uploading image', error: error.message });
   }
 }; 

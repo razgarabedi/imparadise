@@ -20,16 +20,13 @@ const FolderDetail = () => {
 
   const fetchFolderData = useCallback(async () => {
     try {
+      setLoading(true);
       const folderRes = await folderService.getFolderById(folderId);
       setFolder(folderRes.data);
       const imagesRes = await imageService.getImagesInFolder(folderId);
       setImages(imagesRes.data);
-      const settingsRes = await adminService.getSettings();
-      const sizeSetting = settingsRes.data.find(s => s.key === 'max_upload_size');
-      if (sizeSetting) {
-        setMaxUploadSize(parseInt(sizeSetting.value, 10));
-      }
     } catch (err) {
+      console.error("Failed to fetch folder data:", err);
       setError('Failed to fetch folder data.');
     } finally {
       setLoading(false);
