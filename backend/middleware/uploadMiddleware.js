@@ -55,7 +55,11 @@ const fileFilter = (req, file, cb) => {
     if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Invalid file type. Only image files are allowed.'), false);
+        if (!req.skippedFiles) {
+            req.skippedFiles = [];
+        }
+        req.skippedFiles.push(file.originalname);
+        cb(null, false);
     }
 };
 

@@ -11,12 +11,21 @@ exports.uploadImage = async (req, res) => {
   const { folderId } = req.params;
   const files = req.files;
   const user = req.user;
+  const skippedFiles = req.skippedFiles || [];
 
-  if (!files || files.length === 0) {
+  if ((!files || files.length === 0) && skippedFiles.length === 0) {
     return res.status(400).json({ error: 'Image file(s) are required.' });
   }
+
   if (!folderId) {
     return res.status(400).json({ error: 'Folder ID is required.' });
+  }
+
+  if ((!files || files.length === 0) && skippedFiles.length > 0) {
+    return res.status(400).json({
+      message: 'All selected files were of unsupported formats.',
+      skippedFiles: skippedFiles,
+    });
   }
 
   try {
@@ -34,11 +43,6 @@ exports.uploadImage = async (req, res) => {
     const newImages = [];
     
     for (const file of files) {
-      // Check if file is a supported image format
-      if (!imageProcessingService.isSupportedImageFormat(file.mimetype)) {
-        continue; // Skip unsupported formats
-      }
-
       const localUrl = `${protocol}://${req.get('host')}/uploads/${file.filename}`;
       
       // Generate thumbnail
@@ -68,7 +72,17 @@ exports.uploadImage = async (req, res) => {
       newImages.push(newImage);
     }
     
-    res.status(201).json(newImages);
+    const response = {
+        newImages,
+        message: 'Images uploaded successfully.'
+    };
+
+    if (skippedFiles.length > 0) {
+        response.message = `Some files were skipped due to unsupported format.`;
+        response.skippedFiles = skippedFiles;
+    }
+
+    res.status(201).json(response);
   } catch (error) {
     console.error("Error uploading image:", error);
     // If something goes wrong after the file is saved, delete the files

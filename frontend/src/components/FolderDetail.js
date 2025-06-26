@@ -43,82 +43,57 @@ const FolderDetail = () => {
 
   useEffect(() => {
     fetchFolderData();
+    adminService.getSettings().then(res => {
+      const maxSizeSetting = res.data.find(s => s.key === 'max_upload_size');
+      if (maxSizeSetting) {
+        setMaxUploadSize(parseInt(maxSizeSetting.value, 10));
+      }
+    });
   }, [fetchFolderData]);
 
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
-    setError('');
-    setUploadMessage('');
-
-    const validFiles = acceptedFiles.filter(file => {
-        if (file.size > maxUploadSize) {
-            rejectedFiles.push({ file, errors: [{ code: 'file-too-large' }] });
-            return false;
-        }
-        return true;
-    });
-
+    let uploadSkippedMessage = '';
     if (rejectedFiles.length > 0) {
-      const rejectedMessages = rejectedFiles.map(({ file }) => `${file.name}`).join(', ');
-      setUploadMessage(`Could not upload: ${rejectedMessages}. Unsupported format or file too large.`);
+      const rejectedNames = rejectedFiles.map(f => f.file.name).join(', ');
+      uploadSkippedMessage = `Skipped unsupported files: ${rejectedNames}`;
     }
 
-    if (validFiles.length > 0) {
-        setIsUploading(true);
-        setTotalFilesToUpload(validFiles.length);
-        setUploadedFilesCount(0);
-        setUploadProgress(0);
-
-        const fileProgresses = validFiles.reduce((acc, file) => {
-            acc[file.name] = { loaded: 0, total: file.size };
-            return acc;
-        }, {});
-        const totalSize = validFiles.reduce((sum, file) => sum + file.size, 0);
-        
-        const uploadPromises = validFiles.map(file => {
-            const onUploadProgress = progressEvent => {
-                fileProgresses[file.name].loaded = progressEvent.loaded;
-                const totalLoaded = Object.values(fileProgresses).reduce((sum, p) => sum + p.loaded, 0);
-                const percentage = totalSize > 0 ? Math.round((totalLoaded / totalSize) * 100) : 0;
-                setUploadProgress(percentage);
-            };
-
-            return imageService.uploadImages([file], folderId, onUploadProgress)
-                .then(response => {
-                    setUploadedFilesCount(prev => prev + 1);
-                    return response;
-                })
-                .catch(err => {
-                    // Log individual file error, but don't stop the batch
-                    console.error(`Failed to upload ${file.name}:`, err);
-                    // Optionally, collect names of failed uploads to show a more specific error
-                    return { error: true, filename: file.name };
-                });
-        });
-
-        Promise.all(uploadPromises)
-            .then((results) => {
-                const failedUploads = results.filter(r => r && r.error);
-                if (failedUploads.length > 0) {
-                    const failedNames = failedUploads.map(f => f.filename).join(', ');
-                    setUploadMessage(prev => prev ? `${prev}\\nAdditionally, failed to upload: ${failedNames}.` : `Failed to upload: ${failedNames}.`);
-                }
-                fetchFolderData(); // Refresh data
-            })
-            .catch(err => {
-                // This will catch errors not handled per-file, e.g., network issues
-                console.error("Upload failed", err);
-                setError('An unexpected error occurred during upload.');
-            })
-            .finally(() => {
-                setTimeout(() => {
-                  setIsUploading(false);
-                  setTotalFilesToUpload(0);
-                  setUploadedFilesCount(0);
-                  setUploadProgress(0);
-                }, 2000);
-            });
+    if (acceptedFiles.length === 0) {
+      setUploadMessage(uploadSkippedMessage || 'No valid files to upload.');
+      return;
     }
-  }, [folderId, fetchFolderData, maxUploadSize]);
+    
+    setIsUploading(true);
+    setUploadMessage(uploadSkippedMessage);
+    imageService.uploadImages(acceptedFiles, folderId, (progressEvent) => {
+      const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+      setUploadProgress(progress);
+    })
+    .then(response => {
+        let message = response.data.message || 'Upload successful.';
+        if (response.data.skippedFiles && response.data.skippedFiles.length > 0) {
+            const skippedNames = response.data.skippedFiles.join(', ');
+            message += ` Skipped files: ${skippedNames}.`;
+        }
+        setUploadMessage(uploadSkippedMessage ? `${uploadSkippedMessage}\\n${message}` : message);
+        fetchFolderData();
+    })
+    .catch(err => {
+      console.error("Upload failed", err);
+      let errorMsg = 'An unexpected error occurred during upload.';
+      if (err.response && err.response.data && err.response.data.message) {
+        errorMsg = err.response.data.message;
+        if(err.response.data.skippedFiles) {
+          errorMsg += ` Skipped: ${err.response.data.skippedFiles.join(', ')}`;
+        }
+      }
+      setError(errorMsg);
+    })
+    .finally(() => {
+      setIsUploading(false);
+      setUploadProgress(0);
+    });
+  }, [folderId, fetchFolderData]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop, 
@@ -128,18 +103,6 @@ const FolderDetail = () => {
         '.heic', '.heif', '.avif', '.jxl', '.jxr', '.ico', '.psd', '.raw',
         '.ppm', '.pgm', '.pbm'
       ]
-    },
-    onDropRejected: (rejectedFiles) => {
-      const errors = rejectedFiles.map(({ file, errors }) => {
-        if (errors.some(e => e.code === 'file-invalid-type')) {
-          return `File "${file.name}" is not a supported image format.`;
-        }
-        if (errors.some(e => e.code === 'file-too-large')) {
-          return `File "${file.name}" is too large. Max size is ${Math.round(maxUploadSize / 1024 / 1024)}MB.`;
-        }
-        return `File "${file.name}" could not be uploaded.`;
-      });
-      setError(errors.join(' '));
     }
   });
 

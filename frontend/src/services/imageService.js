@@ -28,10 +28,22 @@ const deleteImage = (id) => {
   return axios.delete(API_URL_IMAGES + id, { headers: authHeader() });
 };
 
+const downloadSelectedImages = (imageIds) => {
+  return axios.post(
+    API_URL_IMAGES + 'download-selected',
+    { imageIds },
+    {
+      headers: authHeader(),
+      responseType: 'blob', // Important for file downloads
+    }
+  );
+};
+
 const imageService = {
   uploadImages,
   getImagesInFolder,
   deleteImage,
+  downloadSelectedImages,
 };
 
 export default imageService; 
