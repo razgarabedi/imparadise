@@ -9,21 +9,21 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-sm text-gray-300">
             <p>
-              © {currentYear} Imparadise. This program is free software: you can redistribute it and/or modify 
-              it under the terms of the GNU General Public License as published by the Free Software Foundation, 
-              either version 3 of the License, or (at your option) any later version.
+              © {currentYear} Imparadise. Dieses Programm ist freie Software: Sie können es unter den Bedingungen der 
+              GNU General Public License, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder 
+              modifizieren, entweder unter Version 3 der Lizenz oder (nach Ihrer Wahl) jeder späteren Version.
             </p>
             <p className="mt-2">
-              This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
-              without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-              See the <a 
+              Dieses Programm wird in der Hoffnung verteilt, dass es nützlich sein wird, aber OHNE JEGLICHE GARANTIE; 
+              sogar ohne die implizierte Garantie der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK. 
+              Siehe die <a 
                 href="https://www.gnu.org/licenses/gpl-3.0.html" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-indigo-400 hover:text-indigo-300 underline"
               >
                 GNU General Public License
-              </a> for more details.
+              </a> für weitere Details.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-6 text-sm">

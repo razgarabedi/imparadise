@@ -3,6 +3,7 @@ const path = require('path');
 const Image = require('../models/Image');
 const Folder = require('../models/Folder');
 const Setting = require('../models/Setting');
+const imageProcessingService = require('../services/imageProcessingService');
 
 const DEFAULT_MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -29,9 +30,30 @@ exports.uploadImage = async (req, res) => {
     }
 
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const uploadsDir = path.join(__dirname, '..', 'uploads');
     const newImages = [];
+    
     for (const file of files) {
+      // Check if file is a supported image format
+      if (!imageProcessingService.isSupportedImageFormat(file.mimetype)) {
+        continue; // Skip unsupported formats
+      }
+
       const localUrl = `${protocol}://${req.get('host')}/uploads/${file.filename}`;
+      
+      // Generate thumbnail
+      let thumbnailFilename = null;
+      let thumbnailUrl = null;
+      
+      try {
+        const thumbnailResult = await imageProcessingService.generateThumbnail(file.path, uploadsDir);
+        thumbnailFilename = thumbnailResult.thumbnailFilename;
+        thumbnailUrl = `${protocol}://${req.get('host')}/uploads/${thumbnailFilename}`;
+      } catch (thumbnailError) {
+        console.error('Thumbnail generation failed for file:', file.filename, thumbnailError);
+        // Continue without thumbnail if generation fails
+      }
+
       const newImage = await Image.create(
         file.originalname,
         file.filename,
@@ -39,7 +61,9 @@ exports.uploadImage = async (req, res) => {
         file.size,
         folderId,
         user.id,
-        localUrl
+        localUrl,
+        thumbnailFilename,
+        thumbnailUrl
       );
       newImages.push(newImage);
     }
@@ -50,7 +74,11 @@ exports.uploadImage = async (req, res) => {
     // If something goes wrong after the file is saved, delete the files
     if (files && files.length > 0) {
       for (const file of files) {
-        fs.unlinkSync(file.path);
+        try {
+          fs.unlinkSync(file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting file:', unlinkError);
+        }
       }
     }
     res.status(500).json({ error: 'Error uploading image(s).' });
@@ -95,10 +123,20 @@ exports.deleteImage = async (req, res) => {
             return res.status(403).json({ error: 'Forbidden: You do not have permission to delete this image.' });
         }
         
-        const imagePath = path.join(__dirname, '..', 'uploads', image.stored_filename);
+        const uploadsDir = path.join(__dirname, '..', 'uploads');
+        const imagePath = path.join(uploadsDir, image.stored_filename);
         
+        // Delete original image file
         if (fs.existsSync(imagePath)) {
             fs.unlinkSync(imagePath);
+        }
+
+        // Delete thumbnail file if it exists
+        if (image.thumbnail_filename) {
+            const thumbnailPath = path.join(uploadsDir, image.thumbnail_filename);
+            if (fs.existsSync(thumbnailPath)) {
+                fs.unlinkSync(thumbnailPath);
+            }
         }
 
         await Image.delete(id);
