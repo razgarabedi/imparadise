@@ -1,0 +1,1 @@
+INSERT INTO settings (key, value, description) VALUES ('max_upload_size', '5242880', 'Maximum image upload size in bytes (5MB)'); 
