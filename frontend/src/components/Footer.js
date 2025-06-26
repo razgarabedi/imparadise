@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-sm text-muted">
             <p>
-              © {currentYear} Imparadise. Dieses Programm ist freie Software: Sie können es unter den Bedingungen der 
+              © {currentYear} Imparadise. Entwickelt bei Razg@r. Dieses Programm ist freie Software: Sie können es unter den Bedingungen der 
               GNU General Public License, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder 
               modifizieren, entweder unter Version 3 der Lizenz oder (nach Ihrer Wahl) jeder späteren Version.
             </p>

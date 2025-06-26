@@ -128,13 +128,13 @@ const PublicFolderPage = () => {
             disabled={selectedImages.length === 0}
             className="bg-danger hover:bg-danger-hover text-white font-bold py-2 px-4 rounded disabled:opacity-50"
           >
-            {`${t('delete_selected')} (${selectedImages.length})`}
+            {`${t('folder_detail.delete_selected')} (${selectedImages.length})`}
           </button>
           <button
             onClick={selectAllOnPage}
             className="bg-muted text-text font-bold py-2 px-4 rounded"
           >
-            {paginatedImages.every((img) => selectedImages.includes(img.id)) ? t('unselect_all_on_page') : t('select_all_on_page')}
+            {paginatedImages.every((img) => selectedImages.includes(img.id)) ? t('folder_detail.unselect_all_on_page') : t('folder_detail.select_all_on_page')}
           </button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">

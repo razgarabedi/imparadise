@@ -47,7 +47,7 @@ const CreateFolderModal = ({ isOpen, onClose, onFolderCreated }) => {
                       id="name"
                       value={folderName}
                       onChange={(e) => setFolderName(e.target.value)}
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-border bg-background text-text rounded-md"
+                      className="mt-1 block w-full shadow-sm sm:text-sm border border-accent bg-background text-text rounded-md p-2"
                       required
                     />
                   </div>
