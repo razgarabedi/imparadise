@@ -19,10 +19,10 @@ const Image = {
 
   async findByFolderId(folderId) {
     if (folderId === null) {
-      const res = await pool.query('SELECT * FROM images');
+      const res = await pool.query('SELECT * FROM images ORDER BY created_at DESC');
       return res.rows;
     }
-    const res = await pool.query('SELECT * FROM images WHERE folder_id = $1', [folderId]);
+    const res = await pool.query('SELECT * FROM images WHERE folder_id = $1 ORDER BY created_at DESC', [folderId]);
     return res.rows;
   },
 

@@ -13,13 +13,18 @@ const FolderDetail = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [uploadMessage, setUploadMessage] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [totalFilesToUpload, setTotalFilesToUpload] = useState(0);
+  const [uploadedFilesCount, setUploadedFilesCount] = useState(0);
   const [maxUploadSize, setMaxUploadSize] = useState(10485760); // Default 10MB
   const [selectedImage, setSelectedImage] = useState(null);
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const [imagesPerPage, setImagesPerPage] = useState(15);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(null);
 
   const fetchFolderData = useCallback(async () => {
     try {
@@ -40,28 +45,77 @@ const FolderDetail = () => {
     fetchFolderData();
   }, [fetchFolderData]);
 
-  const onDrop = useCallback(acceptedFiles => {
+  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+    setError('');
+    setUploadMessage('');
+
     const validFiles = acceptedFiles.filter(file => {
         if (file.size > maxUploadSize) {
-            setError(`File ${file.name} exceeds the maximum limit of ${Math.round(maxUploadSize / 1024 / 1024)}MB.`);
+            rejectedFiles.push({ file, errors: [{ code: 'file-too-large' }] });
             return false;
         }
         return true;
     });
 
+    if (rejectedFiles.length > 0) {
+      const rejectedMessages = rejectedFiles.map(({ file }) => `${file.name}`).join(', ');
+      setUploadMessage(`Could not upload: ${rejectedMessages}. Unsupported format or file too large.`);
+    }
+
     if (validFiles.length > 0) {
         setIsUploading(true);
-        setError('');
-        imageService.uploadImages(validFiles, folderId)
-            .then(() => {
+        setTotalFilesToUpload(validFiles.length);
+        setUploadedFilesCount(0);
+        setUploadProgress(0);
+
+        const fileProgresses = validFiles.reduce((acc, file) => {
+            acc[file.name] = { loaded: 0, total: file.size };
+            return acc;
+        }, {});
+        const totalSize = validFiles.reduce((sum, file) => sum + file.size, 0);
+        
+        const uploadPromises = validFiles.map(file => {
+            const onUploadProgress = progressEvent => {
+                fileProgresses[file.name].loaded = progressEvent.loaded;
+                const totalLoaded = Object.values(fileProgresses).reduce((sum, p) => sum + p.loaded, 0);
+                const percentage = totalSize > 0 ? Math.round((totalLoaded / totalSize) * 100) : 0;
+                setUploadProgress(percentage);
+            };
+
+            return imageService.uploadImages([file], folderId, onUploadProgress)
+                .then(response => {
+                    setUploadedFilesCount(prev => prev + 1);
+                    return response;
+                })
+                .catch(err => {
+                    // Log individual file error, but don't stop the batch
+                    console.error(`Failed to upload ${file.name}:`, err);
+                    // Optionally, collect names of failed uploads to show a more specific error
+                    return { error: true, filename: file.name };
+                });
+        });
+
+        Promise.all(uploadPromises)
+            .then((results) => {
+                const failedUploads = results.filter(r => r && r.error);
+                if (failedUploads.length > 0) {
+                    const failedNames = failedUploads.map(f => f.filename).join(', ');
+                    setUploadMessage(prev => prev ? `${prev}\\nAdditionally, failed to upload: ${failedNames}.` : `Failed to upload: ${failedNames}.`);
+                }
                 fetchFolderData(); // Refresh data
             })
             .catch(err => {
+                // This will catch errors not handled per-file, e.g., network issues
                 console.error("Upload failed", err);
-                setError(`Upload failed. Please try again.`);
+                setError('An unexpected error occurred during upload.');
             })
             .finally(() => {
-                setIsUploading(false);
+                setTimeout(() => {
+                  setIsUploading(false);
+                  setTotalFilesToUpload(0);
+                  setUploadedFilesCount(0);
+                  setUploadProgress(0);
+                }, 2000);
             });
     }
   }, [folderId, fetchFolderData, maxUploadSize]);
@@ -100,6 +154,30 @@ const FolderDetail = () => {
     }
   };
   
+  const handleDeleteFromPreview = async (imageId) => {
+    if (window.confirm(t('folder_detail.confirm_delete'))) {
+      try {
+        await imageService.deleteImage(imageId);
+        
+        const updatedImages = images.filter(img => img.id !== imageId);
+        setImages(updatedImages);
+
+        if (updatedImages.length === 0) {
+          closeImagePreview();
+        } else {
+          const nextIndex = currentImageIndex >= updatedImages.length
+            ? updatedImages.length - 1
+            : currentImageIndex;
+          
+          setSelectedImage(updatedImages[nextIndex]);
+          setCurrentImageIndex(nextIndex);
+        }
+      } catch (err) {
+        setError(t('folder_detail.delete_error'));
+      }
+    }
+  };
+
   const handleDownload = (url, filename) => {
     const link = document.createElement('a');
     link.href = url;
@@ -169,6 +247,31 @@ const FolderDetail = () => {
     }
   };
 
+  const openImagePreview = (image) => {
+    const index = images.findIndex(img => img.id === image.id);
+    setCurrentImageIndex(index);
+    setSelectedImage(image);
+  };
+
+  const closeImagePreview = () => {
+    setSelectedImage(null);
+    setCurrentImageIndex(null);
+  };
+
+  const handleNext = () => {
+    if (currentImageIndex === null) return;
+    const nextIndex = (currentImageIndex + 1) % images.length;
+    setSelectedImage(images[nextIndex]);
+    setCurrentImageIndex(nextIndex);
+  };
+
+  const handlePrevious = () => {
+    if (currentImageIndex === null) return;
+    const nextIndex = (currentImageIndex - 1 + images.length) % images.length;
+    setSelectedImage(images[nextIndex]);
+    setCurrentImageIndex(nextIndex);
+  };
+
   if (loading) return <div className="text-center mt-10">{t('loading')}</div>;
   if (error) return <div className="text-center mt-10 text-danger">{error}</div>;
   return (
@@ -205,15 +308,27 @@ const FolderDetail = () => {
             {t('folder_detail.supported_formats')}
           </p>
         </div>
+        {uploadMessage && (
+          <div className="mt-4 p-4 bg-warning/20 border border-warning rounded-lg">
+            <p className="text-sm text-warning-text text-center whitespace-pre-line">
+              {uploadMessage}
+            </p>
+          </div>
+        )}
       </div>
 
       {isUploading && (
           <div className="mb-8">
-              <div className="w-full bg-muted rounded-full">
-                  <div className="bg-accent text-xs font-medium text-white text-center p-0.5 leading-none rounded-full" style={{ width: `100%` }}>
-                      {t('folder_detail.uploading')}
-                  </div>
-              </div>
+            <div className="flex justify-between mb-1">
+              <span className="text-base font-medium text-text">{t('folder_detail.uploading')}</span>
+              <span className="text-sm font-medium text-text">{`${uploadedFilesCount} / ${totalFilesToUpload}`}</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2.5">
+              <div 
+                className="bg-accent h-2.5 rounded-full" 
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
           </div>
       )}
 
@@ -238,7 +353,7 @@ const FolderDetail = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {paginatedImages.map((image) => (
           <div key={image.id} className="bg-background rounded-lg shadow-md overflow-hidden flex flex-col">
-            <div className="cursor-pointer relative" onClick={() => setSelectedImage(image)}>
+            <div className="cursor-pointer relative" onClick={() => openImagePreview(image)}>
               <img 
                 src={image.thumbnail_url || image.url} 
                 alt={image.filename} 
@@ -307,9 +422,11 @@ const FolderDetail = () => {
         <ImagePreviewModal 
           isOpen={!!selectedImage}
           image={selectedImage} 
-          onClose={() => setSelectedImage(null)} 
-          onDelete={handleDeleteImage}
+          onClose={closeImagePreview} 
+          onDelete={handleDeleteFromPreview}
           handleDownload={handleDownload}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
         />
       )}
     </div>

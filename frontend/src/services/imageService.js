@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const API_URL_IMAGES = `${API_BASE_URL}/api/images/`;
 const API_URL_FOLDERS = `${API_BASE_URL}/api/folders/`;
 
-const uploadImages = (files, folderId) => {
+const uploadImages = (files, folderId, onUploadProgress) => {
   const formData = new FormData();
   files.forEach(file => {
     formData.append('images', file);
@@ -16,6 +16,7 @@ const uploadImages = (files, folderId) => {
       ...authHeader(),
       'Content-Type': 'multipart/form-data',
     },
+    onUploadProgress,
   });
 };
 
