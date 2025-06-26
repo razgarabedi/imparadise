@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authHeader from './auth-header';
 
-const API_URL = 'http://localhost:5000/api/folders/';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000') + '/api/folders/';
 
 const createFolder = (name, isPublic) => {
   return axios.post(API_URL, { name, isPublic }, { headers: authHeader() });

@@ -198,3 +198,118 @@ Your backend is now running and will restart automatically.
     Certbot will automatically update your NGINX configuration to handle SSL.
 
 Your application should now be running and accessible at your domain.
+
+---
+
+### Alternative: Deploying Backend on a Separate Subdomain
+
+The main guide describes serving both the frontend and backend from a single domain. If you wish to host your backend on a separate subdomain (e.g., `api.your_domain.com`), follow these modified steps.
+
+This setup requires two separate NGINX server blocks: one for your frontend and one for your API.
+
+#### 1. Backend Server (`.env` Configuration)
+
+In your `backend/.env` file, you must configure the server to listen on all network interfaces by setting the `HOST`. You also need to set the `FRONTEND_URL` to your main domain so the API knows to accept requests from it.
+
+```dotenv
+# backend/.env
+
+# ... other settings
+HOST=0.0.0.0
+FRONTEND_URL=https://your_domain.com
+```
+
+#### 2. Network and DNS Configuration
+
+*   **Port Forwarding**: Ensure your router forwards an external port (e.g., 5000) to the internal IP address of the machine running the backend on that same port.
+*   **DNS Setup**:
+    1.  Create an `A` record for `your_domain.com` that points to your public IP address.
+    2.  Create another `A` record for the `api` subdomain (`api.your_domain.com`) that points to the **same public IP address**.
+
+#### 3. NGINX Configuration for API (`api.your_domain.com`)
+
+Create an NGINX configuration file for your API subdomain.
+
+```bash
+sudo nano /etc/nginx/sites-available/api
+```
+
+Add the following configuration. This block listens for requests to `api.your_domain.com` and forwards them to your Node.js backend running locally on port 5000.
+
+```nginx
+# /etc/nginx/sites-available/api
+server {
+    listen 80;
+    server_name api.your_domain.com;
+
+    location / {
+        proxy_pass http://localhost:5000; # Or 127.0.0.1:5000
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+#### 4. NGINX Configuration for Frontend (`your_domain.com`)
+
+Create a separate NGINX configuration file for your main frontend application.
+
+```bash
+sudo nano /etc/nginx/sites-available/frontend
+```
+
+This configuration serves the static React build files. There is no `location /api` block because API requests will be handled by the other NGINX server block.
+
+```nginx
+# /etc/nginx/sites-available/frontend
+server {
+    listen 80;
+    server_name your_domain.com;
+
+    # Path to your React app's build directory
+    root /path/to/your/project/imparadise/frontend/build;
+    index index.html index.htm;
+
+    location / {
+        try_files $uri /index.html;
+    }
+}
+```
+
+#### 5. Enable Both Sites and Get SSL Certificates
+
+1.  **Enable the sites:**
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/api /etc/nginx/sites-enabled/
+    sudo ln -s /etc/nginx/sites-available/frontend /etc/nginx/sites-enabled/
+    ```
+
+2.  **Test NGINX config and restart:**
+    ```bash
+    sudo nginx -t
+    sudo systemctl restart nginx
+    ```
+
+3.  **Secure both domains with SSL:**
+    Use `certbot` to secure both your main domain and your API subdomain.
+
+    ```bash
+    sudo certbot --nginx -d your_domain.com -d api.your_domain.com
+    ```
+
+#### 6. Frontend Environment Variable
+
+Finally, when building your frontend for production, you must set the `REACT_APP_API_URL` environment variable to point to your new API subdomain.
+
+```bash
+# Example build command
+REACT_APP_API_URL=https://api.your_domain.com npm run build
+```
+
+You must configure this environment variable within your deployment platform or CI/CD pipeline.

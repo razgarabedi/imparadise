@@ -1,8 +1,9 @@
 import axios from 'axios';
 import authHeader from './auth-header';
 
-const API_URL_IMAGES = 'http://localhost:5000/api/images/';
-const API_URL_FOLDERS = 'http://localhost:5000/api/folders/';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL_IMAGES = `${API_BASE_URL}/api/images/`;
+const API_URL_FOLDERS = `${API_BASE_URL}/api/folders/`;
 
 const uploadImage = (file, folderId, onUploadProgress) => {
   const formData = new FormData();

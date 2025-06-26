@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const API_URL = 'http://localhost:5000/api/auth/';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000') + '/api/auth/';
 
 const register = (username, email, password) => {
   return axios.post(API_URL + 'register', {
