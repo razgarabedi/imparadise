@@ -14,6 +14,7 @@
     "username_or_email": "Benutzername oder E-Mail",
     "password": "Passwort",
     "signin": "Anmelden",
+    "button": "Anmelden",
     "failed_login": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
   },
   "register": {

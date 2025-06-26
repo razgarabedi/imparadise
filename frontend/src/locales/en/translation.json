@@ -14,6 +14,7 @@
     "username_or_email": "Username or Email",
     "password": "Password",
     "signin": "Sign in",
+    "button": "Sign in",
     "failed_login": "Failed to login. Please check your credentials."
   },
   "register": {
