@@ -99,5 +99,6 @@
   "page": "Page",
   "of": "of",
   "download": "Download",
-  "select_for_bulk_actions": "Select for bulk actions"
+  "select_for_bulk_actions": "Select for bulk actions",
+  "delete": "Delete"
 } 

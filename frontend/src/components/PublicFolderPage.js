@@ -67,12 +67,13 @@ const PublicFolderPage = () => {
     setCurrentPage(1);
   }, [imagesPerPage, images.length]);
 
-  const handleDownload = (url) => {
+  const handleDownload = (url, filename) => {
     const link = document.createElement('a');
     link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+    link.download = filename;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   // Toggle selection for a single image
@@ -169,7 +170,7 @@ const PublicFolderPage = () => {
                 <p className="text-sm text-muted truncate">{image.filename}</p>
                 <div className="flex-grow"></div>
                 <div className="mt-2 flex justify-end">
-                  <button onClick={() => handleDownload(image.url)} className="text-accent hover:underline text-xs">
+                  <button onClick={() => handleDownload(image.url, image.filename)} className="text-accent hover:underline text-xs">
                     {t('download')}
                   </button>
                 </div>

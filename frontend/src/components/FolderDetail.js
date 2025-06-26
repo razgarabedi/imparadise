@@ -100,12 +100,13 @@ const FolderDetail = () => {
     }
   };
   
-  const handleDownload = (url) => {
+  const handleDownload = (url, filename) => {
     const link = document.createElement('a');
     link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+    link.download = filename;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   // Responsive images per page
@@ -264,7 +265,7 @@ const FolderDetail = () => {
               <div className="flex-grow"></div>
               <div className="flex justify-between items-center mt-2">
                 <button 
-                  onClick={() => handleDownload(image.url)} 
+                  onClick={() => handleDownload(image.url, image.filename)} 
                   className="text-accent hover:underline text-xs"
                 >
                   {t('download')}
@@ -304,10 +305,11 @@ const FolderDetail = () => {
 
       {selectedImage && (
         <ImagePreviewModal 
+          isOpen={!!selectedImage}
           image={selectedImage} 
           onClose={() => setSelectedImage(null)} 
           onDelete={handleDeleteImage}
-          onDownload={handleDownload}
+          handleDownload={handleDownload}
         />
       )}
     </div>

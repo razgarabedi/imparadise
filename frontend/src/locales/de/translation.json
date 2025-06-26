@@ -99,5 +99,6 @@
   "page": "Seite",
   "of": "von",
   "download": "Herunterladen",
-  "select_for_bulk_actions": "Für Massenaktionen auswählen"
+  "select_for_bulk_actions": "Für Massenaktionen auswählen",
+  "delete": "Löschen"
 } 

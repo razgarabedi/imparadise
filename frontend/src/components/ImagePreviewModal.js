@@ -8,7 +8,7 @@ const ImagePreviewModal = ({ isOpen, onClose, image, onDelete, handleDownload })
 
   const onDownload = (e) => {
     e.stopPropagation();
-    handleDownload(image.url);
+    handleDownload(image.url, image.filename);
   };
   
   const onDeleteClick = (e) => {
