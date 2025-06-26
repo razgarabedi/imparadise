@@ -1,9 +1,31 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipeable } from 'react-swipeable';
 
-const ImagePreviewModal = ({ isOpen, onClose, image, onDelete, handleDownload, onNext, onPrevious }) => {
+const ImagePreviewModal = ({ isOpen, onClose, image, onDelete, handleDownload, onNext, onPrevious, currentImageIndex, totalImages }) => {
   const { t } = useTranslation();
+  const [animationClass, setAnimationClass] = useState('');
+  const prevIndexRef = useRef();
+
+  useEffect(() => {
+    if (!isOpen) {
+      prevIndexRef.current = currentImageIndex;
+      return;
+    }
+    const prevIndex = prevIndexRef.current;
+    prevIndexRef.current = currentImageIndex;
+    
+    if (typeof prevIndex !== 'number' || prevIndex === currentImageIndex) {
+      return;
+    }
+
+    const isNext = (prevIndex < currentImageIndex && !(prevIndex === totalImages - 1 && currentImageIndex === 0)) || (prevIndex === 0 && currentImageIndex === totalImages - 1 && totalImages > 1);
+    
+    setAnimationClass(isNext ? 'slide-in-from-right' : 'slide-in-from-left');
+    const timer = setTimeout(() => setAnimationClass(''), 300);
+    return () => clearTimeout(timer);
+
+  }, [currentImageIndex, isOpen, totalImages]);
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => onNext && onNext(),
@@ -46,22 +68,22 @@ const ImagePreviewModal = ({ isOpen, onClose, image, onDelete, handleDownload, o
         {onPrevious && (
           <button
             onClick={handlePreviousClick}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none"
+            className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none hidden sm:block"
             aria-label="Previous"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
           </button>
         )}
         
         <div className="relative w-full">
           <button
             onClick={onClose}
-            className="absolute -top-8 -right-4 z-20 bg-background rounded-full p-2 text-text hover:bg-muted focus:outline-none"
+            className="absolute -top-10 -right-2 sm:-right-4 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-muted focus:outline-none"
             aria-label="Close"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
-          <img src={image.url} alt={image.filename} className="w-full h-auto object-contain max-h-[85vh] rounded-lg shadow-2xl"/>
+          <img key={image.id} src={image.preview_url || image.url} alt={image.filename} className={`w-full h-auto object-contain max-h-[85vh] rounded-lg shadow-2xl ${animationClass}`}/>
           <div className="mt-4 flex justify-center space-x-4">
             <button
               onClick={onDownload}
@@ -85,10 +107,10 @@ const ImagePreviewModal = ({ isOpen, onClose, image, onDelete, handleDownload, o
         {onNext && (
           <button
             onClick={handleNextClick}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none"
+            className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-background/50 rounded-full p-2 text-text hover:bg-background/75 focus:outline-none hidden sm:block"
             aria-label="Next"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
           </button>
         )}
       </div>

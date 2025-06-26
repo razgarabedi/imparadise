@@ -68,6 +68,33 @@ class ImageProcessingService {
       console.error('Error cleaning up thumbnail:', error);
     }
   }
+
+  /**
+   * Generate a preview from an uploaded image
+   * @param {string} originalPath - Path to the original image
+   * @param {string} uploadsDir - Directory where uploads are stored
+   * @returns {Promise<{previewFilename: string, previewPath: string}>}
+   */
+  async generatePreview(originalPath, uploadsDir) {
+    try {
+      const previewFilename = `preview-${uuidv4()}.webp`;
+      const previewPath = path.join(uploadsDir, previewFilename);
+
+      // Generate preview using Sharp
+      await sharp(originalPath)
+        .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toFile(previewPath);
+
+      return {
+        previewFilename,
+        previewPath
+      };
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      throw new Error('Failed to generate preview');
+    }
+  }
 }
 
 module.exports = new ImageProcessingService(); 

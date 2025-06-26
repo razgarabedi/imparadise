@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const archiver = require('archiver');
 const Image = require('../models/Image');
 const Folder = require('../models/Folder');
 const Setting = require('../models/Setting');
@@ -45,17 +46,22 @@ exports.uploadImage = async (req, res) => {
     for (const file of files) {
       const localUrl = `${protocol}://${req.get('host')}/uploads/${file.filename}`;
       
-      // Generate thumbnail
       let thumbnailFilename = null;
       let thumbnailUrl = null;
+      let previewFilename = null;
+      let previewUrl = null;
       
       try {
         const thumbnailResult = await imageProcessingService.generateThumbnail(file.path, uploadsDir);
         thumbnailFilename = thumbnailResult.thumbnailFilename;
         thumbnailUrl = `${protocol}://${req.get('host')}/uploads/${thumbnailFilename}`;
-      } catch (thumbnailError) {
-        console.error('Thumbnail generation failed for file:', file.filename, thumbnailError);
-        // Continue without thumbnail if generation fails
+        
+        const previewResult = await imageProcessingService.generatePreview(file.path, uploadsDir);
+        previewFilename = previewResult.previewFilename;
+        previewUrl = `${protocol}://${req.get('host')}/uploads/${previewFilename}`;
+      } catch (processingError) {
+        console.error('Image processing failed for file:', file.filename, processingError);
+        // Decide if you want to continue without thumbnail/preview or skip this file
       }
 
       const newImage = await Image.create(
@@ -67,7 +73,9 @@ exports.uploadImage = async (req, res) => {
         user.id,
         localUrl,
         thumbnailFilename,
-        thumbnailUrl
+        thumbnailUrl,
+        previewFilename,
+        previewUrl
       );
       newImages.push(newImage);
     }
@@ -159,5 +167,44 @@ exports.deleteImage = async (req, res) => {
     } catch (error) {
         console.error("Error deleting image:", error);
         res.status(500).json({ error: 'Error deleting image.' });
+    }
+};
+
+exports.downloadSelectedImages = async (req, res) => {
+    const { imageIds } = req.body;
+    const user = req.user;
+
+    if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+        return res.status(400).json({ error: 'Image IDs are required.' });
+    }
+
+    try {
+        const images = await Image.findByIds(imageIds);
+        
+        const isOwnerOrAdmin = images.every(img => img.user_id === user.id || user.role === 'admin');
+        if (!isOwnerOrAdmin) {
+            return res.status(403).json({ error: 'Forbidden: You do not have permission to download one or more of these images.' });
+        }
+        
+        const uploadsDir = path.join(__dirname, '..', 'uploads');
+        const archive = archiver('zip', {
+            zlib: { level: 9 }
+        });
+
+        res.attachment('images.zip');
+        archive.pipe(res);
+
+        for (const image of images) {
+            const imagePath = path.join(uploadsDir, image.stored_filename);
+            if (fs.existsSync(imagePath)) {
+                archive.file(imagePath, { name: image.filename });
+            }
+        }
+
+        archive.finalize();
+
+    } catch (error) {
+        console.error("Error downloading images:", error);
+        res.status(500).json({ error: 'Error preparing images for download.' });
     }
 }; 

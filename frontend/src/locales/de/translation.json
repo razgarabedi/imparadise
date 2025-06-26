@@ -100,5 +100,6 @@
   "of": "von",
   "download": "Herunterladen",
   "select_for_bulk_actions": "Für Massenaktionen auswählen",
-  "delete": "Löschen"
+  "delete": "Löschen",
+  "download_selected": "Ausgewählte herunterladen"
 } 

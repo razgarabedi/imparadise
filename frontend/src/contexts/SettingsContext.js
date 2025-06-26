@@ -29,7 +29,7 @@ export const SettingsProvider = ({ children }) => {
     };
 
     fetchSiteSettings();
-  }, []);
+  }, [backendUrl]);
 
   useEffect(() => {
     // Update title

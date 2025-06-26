@@ -617,28 +617,24 @@ video {
   bottom: 0px;
 }
 
-.-right-4 {
-  right: -1rem;
+.-right-2 {
+  right: -0.5rem;
 }
 
-.-top-8 {
-  top: -2rem;
+.-top-10 {
+  top: -2.5rem;
+}
+
+.left-0 {
+  left: 0px;
 }
 
 .left-2 {
   left: 0.5rem;
 }
 
-.left-4 {
-  left: 1rem;
-}
-
 .right-0 {
   right: 0px;
-}
-
-.right-4 {
-  right: 1rem;
 }
 
 .top-0 {
@@ -825,6 +821,10 @@ video {
 
 .w-6 {
   width: 1.5rem;
+}
+
+.w-8 {
+  width: 2rem;
 }
 
 .w-auto {
@@ -1410,6 +1410,38 @@ video {
   transition-duration: 300ms;
 }
 
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-from-right {
+  animation: slide-in-from-right 0.3s ease-out;
+}
+
+@keyframes slide-in-from-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-from-left {
+  animation: slide-in-from-left 0.3s ease-out;
+}
+
 :root {
   --color-background: #ffffff;
   --color-background-muted: #f6f8fa;
@@ -1638,6 +1670,18 @@ code {
 }
 
 @media (min-width: 640px) {
+  .sm\:-right-4 {
+    right: -1rem;
+  }
+
+  .sm\:left-4 {
+    left: 1rem;
+  }
+
+  .sm\:right-4 {
+    right: 1rem;
+  }
+
   .sm\:mx-0 {
     margin-left: 0px;
     margin-right: 0px;

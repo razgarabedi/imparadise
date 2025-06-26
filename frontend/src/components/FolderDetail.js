@@ -16,8 +16,6 @@ const FolderDetail = () => {
   const [uploadMessage, setUploadMessage] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [totalFilesToUpload, setTotalFilesToUpload] = useState(0);
-  const [uploadedFilesCount, setUploadedFilesCount] = useState(0);
   const [maxUploadSize, setMaxUploadSize] = useState(10485760); // Default 10MB
   const [selectedImage, setSelectedImage] = useState(null);
   const { t } = useTranslation();
@@ -284,7 +282,6 @@ const FolderDetail = () => {
           <div className="mb-8">
             <div className="flex justify-between mb-1">
               <span className="text-base font-medium text-text">{t('folder_detail.uploading')}</span>
-              <span className="text-sm font-medium text-text">{`${uploadedFilesCount} / ${totalFilesToUpload}`}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2.5">
               <div 
