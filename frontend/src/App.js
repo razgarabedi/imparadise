@@ -10,6 +10,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import PublicFolderPage from './components/PublicFolderPage';
+import Footer from './components/Footer';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
@@ -23,9 +24,9 @@ function App() {
   };
   
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-200">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-200 flex flex-col">
       <Navbar currentUser={currentUser} logOut={logOut} />
-      <main>
+      <main className="flex-1">
         <Routes>
           <Route path="/" element={currentUser ? <Navigate to="/dashboard" /> : <HomePage />} />
           <Route path="/login" element={currentUser ? <Navigate to="/dashboard" /> : <Login />} />
@@ -36,6 +37,7 @@ function App() {
           <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -97,6 +97,7 @@ const SettingsManager = () => {
           <input
             type="file"
             ref={ref}
+            accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,.svg,.heic,.heif,.avif,.jxl,.jxr,.ico,.psd,.raw,.ppm,.pgm,.pbm"
             onChange={(e) => handleImageUpload(key, e.target.files[0])}
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
           />

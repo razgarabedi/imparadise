@@ -63,7 +63,28 @@ const FolderDetail = () => {
     }
   }, [folderId, fetchFolderData, maxUploadSize]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: 'image/*' });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop, 
+    accept: {
+      'image/*': [
+        '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff', '.svg',
+        '.heic', '.heif', '.avif', '.jxl', '.jxr', '.ico', '.psd', '.raw',
+        '.ppm', '.pgm', '.pbm'
+      ]
+    },
+    onDropRejected: (rejectedFiles) => {
+      const errors = rejectedFiles.map(({ file, errors }) => {
+        if (errors.some(e => e.code === 'file-invalid-type')) {
+          return `File "${file.name}" is not a supported image format.`;
+        }
+        if (errors.some(e => e.code === 'file-too-large')) {
+          return `File "${file.name}" is too large. Max size is ${Math.round(maxUploadSize / 1024 / 1024)}MB.`;
+        }
+        return `File "${file.name}" could not be uploaded.`;
+      });
+      setError(errors.join(' '));
+    }
+  });
 
   const handleDeleteImage = async (imageId) => {
     if (window.confirm('Are you sure you want to delete this image?')) {
@@ -113,6 +134,13 @@ const FolderDetail = () => {
            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
           Select Image(s)
         </button>
+        
+        {/* Supported Formats Info */}
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
+            {t('folder_detail.supported_formats')}
+          </p>
+        </div>
       </div>
 
       {isUploading && (

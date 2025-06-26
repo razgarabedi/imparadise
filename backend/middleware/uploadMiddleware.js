@@ -9,7 +9,37 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/tiff', 'image/svg+xml'];
+// Extended list of image formats including Apple and Android device formats
+const allowedMimeTypes = [
+    // Standard formats
+    'image/jpeg',
+    'image/png', 
+    'image/gif',
+    'image/bmp',
+    'image/webp',
+    'image/tiff',
+    'image/svg+xml',
+    
+    // Apple device formats
+    'image/heic',
+    'image/heif',
+    'image/heic-sequence',
+    'image/heif-sequence',
+    
+    // Android and modern formats
+    'image/avif',
+    'image/jxl',
+    'image/jxr',
+    'image/vnd.ms-photo',
+    
+    // Additional formats
+    'image/x-icon',
+    'image/vnd.adobe.photoshop',
+    'image/x-raw',
+    'image/x-portable-pixmap',
+    'image/x-portable-graymap',
+    'image/x-portable-bitmap'
+];
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
