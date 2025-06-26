@@ -45,7 +45,10 @@
     "upload_button": "Upload",
     "download_button": "Download",
     "delete_button": "Delete",
-    "uploading": "Uploading..."
+    "uploading": "Uploading...",
+    "delete_selected": "Delete Selected",
+    "select_all_on_page": "Select all on page",
+    "unselect_all_on_page": "Unselect all on page"
   },
   "public_folder": {
     "empty_folder": "This folder is empty."
@@ -89,5 +92,12 @@
     "cancel_button": "Cancel",
     "delete_button": "Delete",
     "delete_folder_confirm": "Are you sure you want to delete the folder \"{{folderName}}\"? All of its contents will be permanently removed. This action cannot be undone."
-  }
+  },
+  "loading": "Loading...",
+  "previous": "Previous",
+  "next": "Next",
+  "page": "Page",
+  "of": "of",
+  "download": "Download",
+  "select_for_bulk_actions": "Select for bulk actions"
 } 

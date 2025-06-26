@@ -45,7 +45,10 @@
     "upload_button": "Hochladen",
     "download_button": "Herunterladen",
     "delete_button": "Löschen",
-    "uploading": "Lädt hoch..."
+    "uploading": "Lädt hoch...",
+    "delete_selected": "Ausgewählte löschen",
+    "select_all_on_page": "Alle auf dieser Seite auswählen",
+    "unselect_all_on_page": "Auswahl auf dieser Seite aufheben"
   },
   "public_folder": {
     "empty_folder": "Dieser Ordner ist leer."
@@ -89,5 +92,12 @@
     "cancel_button": "Abbrechen",
     "delete_button": "Löschen",
     "delete_folder_confirm": "Sind Sie sicher, dass Sie den Ordner \"{{folderName}}\" löschen möchten? Alle Inhalte werden dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden."
-  }
+  },
+  "loading": "Wird geladen...",
+  "previous": "Zurück",
+  "next": "Weiter",
+  "page": "Seite",
+  "of": "von",
+  "download": "Herunterladen",
+  "select_for_bulk_actions": "Für Massenaktionen auswählen"
 } 
