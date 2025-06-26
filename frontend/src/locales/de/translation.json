@@ -39,23 +39,29 @@
   "folder_detail": {
     "upload_title": "In {{folderName}} hochladen",
     "upload_subtitle": "Maximale Dateigröße: {{maxSize}}MB",
-    "dropzone_title": "Dateien hier ablegen oder klicken, um Dateien auszuwählen",
-    "dropzone_subtitle": "Bilder (max. {{maxSize}}MB) - Unterstützt JPEG, PNG, GIF, WebP, HEIC, AVIF und mehr",
-    "supported_formats": "Unterstützte Formate: JPEG, PNG, GIF, BMP, WebP, TIFF, SVG, HEIC, HEIF, AVIF, JXL, ICO, PSD, RAW",
+    "dropzone_title": "Dateien hier ablegen",
+    "dropzone_subtitle": "oder klicken, um Dateien auszuwählen",
+    "supported_formats": "Unterstützte Formate: Alle gängigen Bildtypen (JPG, PNG, HEIC, etc.)",
     "upload_button": "Hochladen",
     "download_button": "Herunterladen",
     "delete_button": "Löschen",
     "uploading": "Lädt hoch...",
-    "delete_selected": "Ausgewählte löschen",
-    "select_all_on_page": "Alle auf dieser Seite auswählen",
-    "unselect_all_on_page": "Auswahl auf dieser Seite aufheben",
+    "delete_selected": "Löschen",
+    "select_all_on_page": "Alle auswählen",
+    "unselect_all_on_page": "Alle abwählen",
     "selected_count": "{{count}} ausgewählt",
     "download_error": "Fehler beim Herunterladen der ausgewählten Bilder.",
-    "download_selected": "Ausgewählte herunterladen",
+    "download_selected": "Herunterladen",
     "deselect_all_on_page": "Auswahl für alle auf der Seite aufheben",
     "gallery_title": "Galerie",
     "confirm_delete": "Sind Sie sicher, dass Sie dieses Bild löschen möchten?",
-    "download_all": "Alle herunterladen"
+    "download_all": "Alle herunterladen",
+    "dropzone_text": "Dateien hier ablegen oder klicken, um sie auszuwählen",
+    "upload_status": "Lade {{filesUploaded}} von {{totalFilesToUpload}} Dateien hoch...",
+    "upload_finished": "Hochladen abgeschlossen.",
+    "backend_skipped": "Übersprungene Dateien (nicht unterstützter Typ auf dem Backend): {{skippedNames}}",
+    "failed_uploads": "Fehler beim Hochladen von: {{failedNames}}",
+    "skipped_unsupported": "Übersprungene nicht unterstützte Dateien: {{rejectedNames}}"
   },
   "public_folder": {
     "empty_folder": "Dieser Ordner ist leer."
@@ -86,7 +92,9 @@
       "save_settings": "Einstellungen speichern",
       "success_message": "Einstellungen erfolgreich aktualisiert!",
       "error_message": "Fehler beim Aktualisieren einer oder mehrerer Einstellungen."
-    }
+    },
+    "dashboard_title": "Admin-Dashboard",
+    "users_section_title": "Benutzer"
   },
   "modals": {
     "create_folder_title": "Neuen Ordner erstellen",

@@ -19,7 +19,11 @@ export const SettingsProvider = ({ children }) => {
       try {
         const response = await axios.get(`${backendUrl}/api/public-settings`);
         if (response.data) {
-          setSettings(response.data);
+          const settingsObject = response.data.reduce((acc, setting) => {
+            acc[setting.key] = setting.value;
+            return acc;
+          }, {});
+          setSettings(settingsObject);
         }
       } catch (error) {
         console.error('Failed to fetch site settings:', error);

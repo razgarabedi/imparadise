@@ -10,7 +10,7 @@ router.post(
   '/upload/:folderId',
   authenticateToken,
   authorizeRole(['user', 'admin']),
-  upload.array('images', 10),
+  upload.array('images', 100),
   uploadImage
 );
 

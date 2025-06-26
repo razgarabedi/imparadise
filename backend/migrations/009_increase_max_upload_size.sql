@@ -1,0 +1,1 @@
+UPDATE settings SET value = '20971520', description = 'Maximum image upload size in bytes (20MB)' WHERE key = 'max_upload_size'; 

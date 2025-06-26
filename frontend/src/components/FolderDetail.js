@@ -4,8 +4,9 @@ import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 import folderService from '../services/folderService';
 import imageService from '../services/imageService';
-import adminService from '../services/adminService';
+import settingsService from '../services/settingsService';
 import ImagePreviewModal from './ImagePreviewModal';
+import { useSettings } from '../contexts/SettingsContext';
 
 const FolderDetail = () => {
   const { folderId } = useParams();
@@ -18,11 +19,15 @@ const FolderDetail = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [maxUploadSize, setMaxUploadSize] = useState(10485760); // Default 10MB
   const [selectedImage, setSelectedImage] = useState(null);
-  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const [imagesPerPage, setImagesPerPage] = useState(15);
   const [selectedImages, setSelectedImages] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(null);
+  const [filesUploaded, setFilesUploaded] = useState(0);
+  const [totalFilesToUpload, setTotalFilesToUpload] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { settings } = useSettings();
+  const { t } = useTranslation();
 
   const fetchFolderData = useCallback(async () => {
     try {
@@ -41,57 +46,60 @@ const FolderDetail = () => {
 
   useEffect(() => {
     fetchFolderData();
-    adminService.getSettings().then(res => {
+    settingsService.getUserSettings().then(res => {
       const maxSizeSetting = res.data.find(s => s.key === 'max_upload_size');
-      if (maxSizeSetting) {
+      if (maxSizeSetting && maxSizeSetting.value) {
         setMaxUploadSize(parseInt(maxSizeSetting.value, 10));
       }
     });
   }, [fetchFolderData]);
 
-  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+  const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
     let uploadSkippedMessage = '';
-    if (rejectedFiles.length > 0) {
+    if (rejectedFiles && rejectedFiles.length > 0) {
       const rejectedNames = rejectedFiles.map(f => f.file.name).join(', ');
-      uploadSkippedMessage = `Skipped unsupported files: ${rejectedNames}`;
+      uploadSkippedMessage = t('folder_detail.skipped_unsupported', { rejectedNames });
     }
 
     if (acceptedFiles.length === 0) {
-      setUploadMessage(uploadSkippedMessage || 'No valid files to upload.');
+      setUploadMessage(uploadSkippedMessage || t('folder_detail.no_valid_files'));
       return;
     }
     
     setIsUploading(true);
     setUploadMessage(uploadSkippedMessage);
-    imageService.uploadImages(acceptedFiles, folderId, (progressEvent) => {
-      const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-      setUploadProgress(progress);
-    })
-    .then(response => {
-        let message = response.data.message || 'Upload successful.';
+    setTotalFilesToUpload(acceptedFiles.length);
+    setFilesUploaded(0);
+    setError('');
+
+    const backendSkippedFiles = [];
+    const failedFiles = [];
+
+    for (const file of acceptedFiles) {
+      try {
+        const response = await imageService.uploadImages([file], folderId);
         if (response.data.skippedFiles && response.data.skippedFiles.length > 0) {
-            const skippedNames = response.data.skippedFiles.join(', ');
-            message += ` Skipped files: ${skippedNames}.`;
+          backendSkippedFiles.push(...response.data.skippedFiles);
         }
-        setUploadMessage(uploadSkippedMessage ? `${uploadSkippedMessage}\\n${message}` : message);
-        fetchFolderData();
-    })
-    .catch(err => {
-      console.error("Upload failed", err);
-      let errorMsg = 'An unexpected error occurred during upload.';
-      if (err.response && err.response.data && err.response.data.message) {
-        errorMsg = err.response.data.message;
-        if(err.response.data.skippedFiles) {
-          errorMsg += ` Skipped: ${err.response.data.skippedFiles.join(', ')}`;
-        }
+        setFilesUploaded(prev => prev + 1);
+      } catch (err) {
+        console.error("Upload failed for a file:", err);
+        failedFiles.push(file.name);
       }
-      setError(errorMsg);
-    })
-    .finally(() => {
-      setIsUploading(false);
-      setUploadProgress(0);
-    });
-  }, [folderId, fetchFolderData]);
+    }
+    
+    let finalMessage = t('folder_detail.upload_finished');
+    if (backendSkippedFiles.length > 0) {
+      finalMessage += ` ${t('folder_detail.backend_skipped', { skippedNames: backendSkippedFiles.join(', ') })}`;
+    }
+    if (failedFiles.length > 0) {
+        setError(prev => `${prev} ${t('folder_detail.failed_uploads', { failedNames: failedFiles.join(', ') })}`);
+    }
+
+    setUploadMessage(finalMessage);
+    setIsUploading(false);
+    fetchFolderData();
+  }, [folderId, fetchFolderData, t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop, 
@@ -286,54 +294,23 @@ const FolderDetail = () => {
           <h2 className="text-2xl font-bold text-text">{t('folder_detail.upload_title', { folderName: folder?.name })}</h2>
           <p className="text-muted">{t('folder_detail.upload_subtitle', { maxSize: Math.round(maxUploadSize / 1024 / 1024) })}</p>
         </div>
-        <div 
-          {...getRootProps()} 
-          className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${isDragActive ? 'border-accent bg-accent-muted' : 'border-border hover:border-accent'}`}
-        >
-          <input {...getInputProps()} />
-          <div className="flex flex-col items-center">
-            <svg className="w-16 h-16 text-accent mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path><path d="M12 12v9"></path><path d="M16 16l-4-4-4 4"></path></path></svg>
-            <p className="text-lg font-semibold text-muted">{isUploading ? t('folder_detail.uploading') : t('folder_detail.dropzone_title')}</p>
-            <p className="text-sm text-muted">{t('folder_detail.dropzone_subtitle', { maxSize: Math.round(maxUploadSize / 1024 / 1024) })}</p>
+        <div className="flex flex-col items-center justify-center p-4">
+          <div {...getRootProps()} className={`w-full p-10 border-2 border-dashed rounded-lg text-center cursor-pointer ${isDragActive ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}>
+            <input {...getInputProps()} />
+            <p>{t('folder_detail.dropzone_text')}</p>
           </div>
+          {isUploading && (
+            <div className="w-full mt-4">
+              <p>{t('folder_detail.upload_status', { filesUploaded, totalFilesToUpload })}</p>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${totalFilesToUpload > 0 ? (filesUploaded / totalFilesToUpload) * 100 : 0}%` }}></div>
+              </div>
+            </div>
+          )}
+          {uploadMessage && <p className="mt-2 text-sm text-gray-600">{uploadMessage}</p>}
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         </div>
-        <button 
-          type="button"
-          {...getRootProps()}
-          className="w-full mt-6 bg-accent hover:bg-accent-hover text-white font-bold py-3 px-4 rounded-md shadow-sm transition-colors duration-300 flex items-center justify-center"
-        >
-           <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
-          Select Image(s)
-        </button>
-        
-        {/* Supported Formats Info */}
-        <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="text-sm text-muted text-center">
-            {t('folder_detail.supported_formats')}
-          </p>
-        </div>
-        {uploadMessage && (
-          <div className="mt-4 p-4 bg-warning/20 border border-warning rounded-lg">
-            <p className="text-sm text-warning-text text-center whitespace-pre-line">
-              {uploadMessage}
-            </p>
-          </div>
-        )}
       </div>
-
-      {isUploading && (
-          <div className="mb-8">
-            <div className="flex justify-between mb-1">
-              <span className="text-base font-medium text-text">{t('folder_detail.uploading')}</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2.5">
-              <div 
-                className="bg-accent h-2.5 rounded-full" 
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-            </div>
-          </div>
-      )}
 
       {/* Bulk Actions */}
       <div className="flex items-center mb-4 gap-2">
@@ -349,7 +326,7 @@ const FolderDetail = () => {
           disabled={selectedImages.length === 0}
           className="bg-primary hover:bg-primary-dark text-white font-medium py-1 px-3 rounded disabled:opacity-50"
         >
-          {t('folder_detail.download_selected')}
+          {`${t('folder_detail.download_selected')} (${selectedImages.length})`}
         </button>
         <button
           onClick={selectAllOnPage}

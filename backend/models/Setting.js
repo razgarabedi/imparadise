@@ -22,10 +22,7 @@ const Setting = {
   async getMultiple(keys) {
     const query = 'SELECT key, value FROM settings WHERE key = ANY($1::text[])';
     const { rows } = await pool.query(query, [keys]);
-    return rows.reduce((acc, row) => {
-      acc[row.key] = row.value;
-      return acc;
-    }, {});
+    return rows;
   },
 };
 
