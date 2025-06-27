@@ -27,10 +27,11 @@ const deleteFolder = (id) => {
   return axios.delete(API_URL + id, { headers: authHeader() });
 };
 
-const downloadFolder = (id) => {
+const downloadFolder = (id, onDownloadProgress) => {
   return axios.get(API_URL + id + '/download', {
     headers: authHeader(),
     responseType: 'blob',
+    onDownloadProgress,
   });
 };
 

@@ -23,6 +23,8 @@ const FolderDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(null);
   const [filesUploaded, setFilesUploaded] = useState(0);
   const [totalFilesToUpload, setTotalFilesToUpload] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const { t } = useTranslation();
 
   const fetchFolderData = useCallback(async () => {
@@ -219,8 +221,18 @@ const FolderDetail = () => {
 
   const handleDownloadSelected = async () => {
     if (selectedImages.length === 0) return;
+    setIsDownloading(true);
+    setDownloadProgress(0);
     try {
-      const response = await imageService.downloadImages({ imageIds: selectedImages });
+      const response = await imageService.downloadImages(
+        { imageIds: selectedImages },
+        (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setDownloadProgress(percentCompleted);
+        }
+      );
       
       const blob = new Blob([response.data], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
@@ -238,12 +250,24 @@ const FolderDetail = () => {
     } catch (err) {
       setError(t('folder_detail.download_error'));
       console.error("Download failed", err);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
   const handleDownloadAll = async () => {
+    setIsDownloading(true);
+    setDownloadProgress(0);
     try {
-      const response = await folderService.downloadFolder(folderId);
+      const response = await folderService.downloadFolder(
+        folderId,
+        (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setDownloadProgress(percentCompleted);
+        }
+      );
       const blob = new Blob([response.data], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -257,6 +281,8 @@ const FolderDetail = () => {
     } catch (err) {
       setError(t('folder_detail.download_error'));
       console.error("Download failed", err);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -313,8 +339,20 @@ const FolderDetail = () => {
         </div>
       </div>
 
+      {isDownloading && (
+        <div className="mb-4">
+          <p className="text-text">{t('folder_detail.downloading_images')}... {downloadProgress}%</p>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full"
+              style={{ width: `${downloadProgress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
       {/* Bulk Actions */}
-      <div className="flex items-center mb-4 gap-2">
+      <div className="flex items-center space-x-4 mb-4">
         <button
           onClick={handleDeleteSelected}
           disabled={selectedImages.length === 0}
@@ -324,10 +362,10 @@ const FolderDetail = () => {
         </button>
         <button
           onClick={handleDownloadSelected}
-          disabled={selectedImages.length === 0}
+          disabled={selectedImages.length === 0 || isDownloading}
           className="bg-primary hover:bg-primary-dark text-white font-medium py-1 px-3 rounded disabled:opacity-50"
         >
-          {`${t('folder_detail.download_selected')} (${selectedImages.length})`}
+          {isDownloading ? t('folder_detail.downloading') : `${t('folder_detail.download_selected')} (${selectedImages.length})`}
         </button>
         <button
           onClick={selectAllOnPage}
@@ -342,14 +380,14 @@ const FolderDetail = () => {
         <button
           onClick={handleDownloadAll}
           className="bg-accent hover:bg-accent-hover text-white font-medium py-1 px-3 rounded"
-          disabled={images.length === 0}
+          disabled={images.length === 0 || isDownloading}
         >
-          {t('folder_detail.download_all')}
+          {isDownloading ? t('folder_detail.downloading') : t('folder_detail.download_all')}
         </button>
       </div>
 
       {/* Image Gallery */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {paginatedImages.map((image) => (
           <div key={image.id} className="bg-background rounded-lg shadow-md overflow-hidden flex flex-col">
             <div className="cursor-pointer relative" onClick={() => openImagePreview(image)}>

@@ -3,6 +3,7 @@ const Image = require('../models/Image');
 const path = require('path');
 const fs = require('fs');
 const archiver = require('archiver');
+const { v4: uuidv4 } = require('uuid');
 
 exports.createFolder = async (req, res) => {
   const { name, isPublic } = req.body;
@@ -124,12 +125,43 @@ exports.downloadFolder = async (req, res) => {
       return res.status(404).json({ error: 'This folder is empty.' });
     }
 
+    const tempDir = path.join(__dirname, '..', 'tmp');
+    const tempFileName = `${uuidv4()}.zip`;
+    const tempFilePath = path.join(tempDir, tempFileName);
+
+    const output = fs.createWriteStream(tempFilePath);
     const archive = archiver('zip', {
       zlib: { level: 9 }
     });
 
-    res.attachment(`${folder.name}.zip`);
-    archive.pipe(res);
+    output.on('close', () => {
+      const fileSize = archive.pointer();
+      res.setHeader('Content-Length', fileSize);
+      res.attachment(`${folder.name}.zip`);
+
+      const readStream = fs.createReadStream(tempFilePath);
+      readStream.pipe(res);
+
+      readStream.on('end', () => {
+        fs.unlink(tempFilePath, (err) => {
+          if (err) {
+            console.error('Error deleting temporary zip file:', err);
+          }
+        });
+      });
+
+      readStream.on('error', (err) => {
+        console.error('Error streaming temporary zip file:', err);
+        fs.unlink(tempFilePath, () => {});
+        res.status(500).send('Error sending file');
+      });
+    });
+
+    archive.on('error', (err) => {
+      throw err;
+    });
+
+    archive.pipe(output);
 
     const uploadsDir = path.join(__dirname, '..', 'uploads');
     for (const image of images) {

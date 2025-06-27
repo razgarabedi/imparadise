@@ -68,7 +68,9 @@
     "backend_skipped": "Übersprungene Dateien (nicht unterstützter Typ auf dem Backend): {{skippedNames}}",
     "failed_uploads": "Fehler beim Hochladen von: {{failedNames}}",
     "skipped_unsupported": "Übersprungene nicht unterstützte Dateien: {{rejectedNames}}",
-    "delete_error": "Bild konnte nicht gelöscht werden."
+    "delete_error": "Bild konnte nicht gelöscht werden.",
+    "downloading": "Wird heruntergeladen...",
+    "downloading_images": "Bilder werden heruntergeladen"
   },
   "public_folder": {
     "empty_folder": "Dieser Ordner ist leer."

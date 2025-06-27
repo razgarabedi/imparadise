@@ -60,7 +60,9 @@
     "confirm_delete": "Are you sure you want to delete this image?",
     "download_all": "Download All",
     "no_valid_files": "No valid files were selected for upload.",
-    "processing": "Processing images..."
+    "processing": "Processing images...",
+    "downloading": "Downloading...",
+    "downloading_images": "Downloading images"
   },
   "public_folder": {
     "empty_folder": "This folder is empty."

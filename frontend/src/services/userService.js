@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authHeader from './auth-header';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/user';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000') + '/api/user';
 
 const getProfile = () => {
     return axios.get(API_URL + '/profile', { headers: authHeader() });

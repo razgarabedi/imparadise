@@ -1,6 +1,8 @@
 const fs = require('fs').promises;
+const fsExtra = require('fs-extra');
 const path = require('path');
 const archiver = require('archiver');
+const { v4: uuidv4 } = require('uuid');
 const Image = require('../models/Image');
 const Folder = require('../models/Folder');
 const Setting = require('../models/Setting');
@@ -215,6 +217,7 @@ exports.downloadBulkImages = async (req, res) => {
             return res.status(404).json({ error: 'No images found for the given IDs.' });
         }
         
+        let folderName = 'images';
         if (user) {
             // User is authenticated, check ownership or admin role
             const isOwnerOrAdmin = images.every(img => img.user_id === user.id || user.role === 'admin');
@@ -234,26 +237,65 @@ exports.downloadBulkImages = async (req, res) => {
             if (!allInSamePublicFolder) {
                 return res.status(400).json({ error: 'All images must belong to the same public folder for bulk download.' });
             }
+            folderName = folder.name;
         }
         
-        const uploadsDir = path.join(__dirname, '..', 'uploads');
+        const tempDir = path.join(__dirname, '..', 'tmp');
+        const tempFileName = `${uuidv4()}.zip`;
+        const tempFilePath = path.join(tempDir, tempFileName);
+
+        const output = fsExtra.createWriteStream(tempFilePath);
         const archive = archiver('zip', {
             zlib: { level: 9 }
         });
 
-        res.attachment('images.zip');
-        archive.pipe(res);
+        output.on('close', async () => {
+            try {
+                const fileSize = archive.pointer();
+                res.setHeader('Content-Length', fileSize);
+                res.attachment(`${folderName}.zip`);
 
+                const readStream = fsExtra.createReadStream(tempFilePath);
+                readStream.pipe(res);
+
+                readStream.on('end', () => {
+                    fsExtra.unlink(tempFilePath, (err) => {
+                        if (err) console.error('Error deleting temp zip file:', err);
+                    });
+                });
+
+                readStream.on('error', (err) => {
+                    console.error('Error streaming temp zip file:', err);
+                    fsExtra.unlink(tempFilePath, () => {});
+                    if (!res.headersSent) {
+                        res.status(500).send('Error sending file');
+                    }
+                });
+            } catch (err) {
+                console.error('Error during file streaming:', err);
+                fsExtra.unlink(tempFilePath, () => {});
+                if (!res.headersSent) {
+                    res.status(500).send('Error preparing file for download.');
+                }
+            }
+        });
+
+        archive.on('error', (err) => {
+            console.error('Archiver error:', err);
+            fsExtra.unlink(tempFilePath, () => {});
+            if (!res.headersSent) {
+                res.status(500).send('Error creating zip archive.');
+            }
+        });
+
+        archive.pipe(output);
+
+        const uploadsDir = path.join(__dirname, '..', 'uploads');
         for (const image of images) {
             if (image.stored_filename) {
                 const imagePath = path.join(uploadsDir, image.folder_id.toString(), image.stored_filename);
-                try {
-                    await fs.access(imagePath);
+                if (await fsExtra.pathExists(imagePath)) {
                     archive.file(imagePath, { name: image.filename });
-                } catch (err) {
-                    if (err.code !== 'ENOENT') {
-                        console.error(`File not found or unreadable, skipping: ${imagePath}`, err);
-                    }
                 }
             }
         }
@@ -262,6 +304,8 @@ exports.downloadBulkImages = async (req, res) => {
 
     } catch (error) {
         console.error("Error downloading images:", error);
-        res.status(500).json({ error: 'Error preparing images for download.' });
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Error preparing images for download.' });
+        }
     }
 }; 

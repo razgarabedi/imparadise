@@ -41,13 +41,14 @@ const deleteImage = (id) => {
   return axios.delete(API_URL_IMAGES + id, { headers: authHeader() });
 };
 
-const downloadImages = (imageIds) => {
+const downloadImages = (imageIds, onDownloadProgress) => {
   return axios.post(
     API_URL_IMAGES + 'download/bulk',
     imageIds,
     {
       headers: authHeader(),
       responseType: 'blob',
+      onDownloadProgress,
     }
   );
 };
