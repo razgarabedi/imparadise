@@ -1,35 +1,35 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 
 const HomePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { login, resetLoginSuccess } = useAuth();
   const { settings, loading } = useSettings();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     try {
-      await authService.login(username, password);
-      navigate('/dashboard');
-      window.location.reload();
+      await login(username, password);
+      setSuccess(t('login.success_message'));
+      setTimeout(() => {
+        resetLoginSuccess();
+        navigate('/dashboard');
+      }, 1500);
     } catch (err) {
-      const resMessage =
-        (err.response &&
-          err.response.data &&
-          err.response.data.message) ||
-        err.message ||
-        err.toString();
-      setError(resMessage);
+      setError(t('login.failed_login'));
     }
   };
 
@@ -53,6 +53,8 @@ const HomePage = () => {
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          {error && <p className="text-danger text-center text-sm">{error}</p>}
+          {success && <p className="text-success text-center text-sm">{success}</p>}
           <input type="hidden" name="remember" defaultValue="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -103,12 +105,6 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-
-          {error && (
-            <p className="mt-2 text-center text-sm text-danger">
-              {error}
-            </p>
-          )}
 
           <div>
             <button

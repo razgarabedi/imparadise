@@ -40,6 +40,10 @@ const uploadSettingImage = (settingKey, file) => {
   });
 };
 
+const changeUserPassword = (userId, newPassword) => {
+  return axios.put(API_URL + `users/${userId}/password`, { newPassword }, { headers: authHeader() });
+};
+
 const adminService = {
   getAllUsers,
   updateUserRole,
@@ -48,6 +52,7 @@ const adminService = {
   getSettings,
   updateSetting,
   uploadSettingImage,
+  changeUserPassword,
 };
 
 export default adminService; 

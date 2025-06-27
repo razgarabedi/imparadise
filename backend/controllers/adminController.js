@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Setting = require('../models/Setting');
+const bcrypt = require('bcryptjs');
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -107,4 +108,24 @@ exports.uploadSettingImage = async (req, res) => {
     console.error('Error uploading setting image:', error)
     res.status(500).json({ message: 'Error uploading image', error: error.message });
   }
+};
+
+exports.changeUserPassword = async (req, res) => {
+    const { userId } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return res.status(400).json({ error: 'New password is required.' });
+    }
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(newPassword, salt);
+
+        await User.updatePassword(userId, passwordHash);
+        res.json({ message: 'User password updated successfully.' });
+    } catch (error) {
+        console.error('Error changing user password:', error);
+        res.status(500).json({ error: 'Error changing user password.' });
+    }
 }; 

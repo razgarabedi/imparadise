@@ -5,7 +5,8 @@
     "admin": "Admin",
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "profile": "Profile"
   },
   "login": {
     "title": "Sign in to your account",
@@ -15,7 +16,8 @@
     "password": "Password",
     "signin": "Sign in",
     "button": "Sign in",
-    "failed_login": "Failed to login. Please check your credentials."
+    "failed_login": "Failed to login. Please check your credentials.",
+    "success_message": "Login successful! Redirecting..."
   },
   "register": {
     "title": "Create a new account",
@@ -25,7 +27,8 @@
     "email": "Email address",
     "password": "Password",
     "register": "Register",
-    "failed_register": "Failed to register. Please try again."
+    "failed_register": "Failed to register. Please try again.",
+    "success_message": "Registration successful! Logging you in..."
   },
   "dashboard": {
     "title": "Your Folders",
@@ -120,5 +123,19 @@
     "storage_limit_exceeded": "Storage limit exceeded. You cannot upload these files.",
     "upload_failed": "Upload failed. An unknown error occurred.",
     "upload_failed_network": "Upload failed. Could not connect to the server."
+  },
+  "profile": {
+    "title": "User Profile",
+    "picture": "Profile Picture",
+    "uploadPicture": "Upload Picture",
+    "updateProfile": "Update Profile",
+    "username": "Username",
+    "email": "Email",
+    "update": "Update",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "changePasswordBtn": "Change Password"
   }
 } 

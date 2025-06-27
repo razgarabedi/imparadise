@@ -104,7 +104,7 @@ const Dashboard = () => {
         </button>
       </div>
       
-      {user && <StorageUsage storageUsed={user.storage_used} storageLimit={user.storage_limit} />}
+      {user && <div className="mb-8"><StorageUsage storageUsed={user.storage_used} storageLimit={user.storage_limit} /></div>}
 
       <CreateFolderModal
         isOpen={isCreateModalOpen}

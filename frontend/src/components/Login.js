@@ -8,16 +8,22 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, resetLoginSuccess } = useAuth();
   const { t } = useTranslation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     try {
       await login(usernameOrEmail, password);
-      navigate('/dashboard');
+      setSuccess(t('login.success_message'));
+      setTimeout(() => {
+        resetLoginSuccess();
+        navigate('/dashboard');
+      }, 1500);
     } catch (err) {
       setError(t('login.failed_login'));
     }
@@ -39,6 +45,7 @@ const Login = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && <p className="text-danger text-center text-sm">{error}</p>}
+          {success && <p className="text-success text-center text-sm">{success}</p>}
           <input type="hidden" name="remember" value="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             <div>

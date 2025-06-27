@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import authService from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -9,15 +10,23 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const { loginWithToken, resetLoginSuccess } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     try {
-      await authService.register(username, email, password);
-      navigate('/login');
+      const response = await authService.register(username, email, password);
+      setSuccess(t('register.success_message'));
+      setTimeout(() => {
+        loginWithToken(response.data);
+        resetLoginSuccess();
+        navigate('/dashboard');
+      }, 1500);
     } catch (err) {
       setError(t('register.failed_register'));
     }
@@ -39,6 +48,7 @@ const Register = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           {error && <p className="text-danger text-center text-sm">{error}</p>}
+          {success && <p className="text-success text-center text-sm">{success}</p>}
           <input type="hidden" name="remember" value="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             <div>

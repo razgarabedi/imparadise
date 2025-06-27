@@ -8,6 +8,7 @@ const {
   updateSetting,
   uploadSettingImage,
   updateUserStorageLimit,
+  changeUserPassword,
 } = require('../controllers/adminController');
 const { authenticateToken } = require('../middleware/authMiddleware');
 const { authorizeRole } = require('../middleware/roleMiddleware');
@@ -22,6 +23,7 @@ router.get('/users', getAllUsers);
 router.put('/users/:userId/role', updateUserRole);
 router.delete('/users/:userId', deleteUser);
 router.put('/users/:userId/storage-limit', updateUserStorageLimit);
+router.put('/users/:userId/password', changeUserPassword);
 
 // Settings management
 router.get('/settings', getSettings);

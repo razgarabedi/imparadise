@@ -62,6 +62,30 @@ class User {
     );
     return rows[0];
   }
+
+  static async updateProfile(id, username, email) {
+    const { rows } = await db.query(
+      'UPDATE users SET username = $1, email = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING id, username, email, role, created_at, updated_at',
+      [username, email, id]
+    );
+    return rows[0];
+  }
+
+  static async updatePassword(id, passwordHash) {
+    const { rows } = await db.query(
+      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id',
+      [passwordHash, id]
+    );
+    return rows[0];
+  }
+
+  static async updateProfilePicture(id, profilePictureUrl) {
+    const { rows } = await db.query(
+      'UPDATE users SET profile_picture_url = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, profile_picture_url',
+      [profilePictureUrl, id]
+    );
+    return rows[0];
+  }
 }
 
 module.exports = User; 

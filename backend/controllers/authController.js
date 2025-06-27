@@ -13,9 +13,22 @@ exports.registerUser = async (req, res) => {
     const role = userCount === 0 ? 'admin' : 'user';
 
     const newUser = await User.create(username, email, passwordHash, role);
+
+    const payload = { id: newUser.id, role: newUser.role };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
     res.status(201).json({
-      message: 'User registered successfully',
-      user: { id: newUser.id, username: newUser.username, email: newUser.email, role: newUser.role },
+      token,
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,
+        storage_limit: newUser.storage_limit,
+        storage_used: newUser.storage_used,
+        profile_picture_url: newUser.profile_picture_url
+      },
+      message: 'User registered successfully'
     });
   } catch (error) {
     res.status(500).json({ error: 'Error registering new user.' });
@@ -52,6 +65,7 @@ exports.loginUser = async (req, res) => {
         role: user.role,
         storage_limit: user.storage_limit,
         storage_used: user.storage_used,
+        profile_picture_url: user.profile_picture_url
       },
     });
   } catch (error) {
@@ -72,6 +86,7 @@ exports.getMe = async (req, res) => {
             role: user.role,
             storage_limit: user.storage_limit,
             storage_used: user.storage_used,
+            profile_picture_url: user.profile_picture_url
         });
     } catch (error) {
         res.status(500).json({ error: 'Error fetching user data.' });

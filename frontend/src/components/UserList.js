@@ -3,11 +3,14 @@ import { useTranslation } from 'react-i18next';
 import adminService from '../services/adminService';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ChangePasswordModal from './ChangePasswordModal';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
   const [editingLimit, setEditingLimit] = useState({});
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -67,6 +70,16 @@ const UserList = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   };
 
+  const handleOpenPasswordModal = (user) => {
+    setSelectedUser(user);
+    setIsPasswordModalOpen(true);
+  };
+
+  const handleClosePasswordModal = () => {
+    setSelectedUser(null);
+    setIsPasswordModalOpen(false);
+  };
+
   return (
     <div>
       {error && <p className="text-danger mb-4">{error}</p>}
@@ -119,6 +132,12 @@ const UserList = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
+                    onClick={() => handleOpenPasswordModal(user)}
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                  >
+                    {t('profile.changePasswordBtn')}
+                  </button>
+                  <button
                     onClick={() => handleDeleteUser(user.id)}
                     className="text-danger hover:text-danger-hover"
                     disabled={user.role === 'admin' && users.filter(u => u.role === 'admin').length === 1}
@@ -131,6 +150,13 @@ const UserList = () => {
           </tbody>
         </table>
       </div>
+      {isPasswordModalOpen && (
+        <ChangePasswordModal
+          user={selectedUser}
+          onClose={handleClosePasswordModal}
+          onSuccess={fetchUsers}
+        />
+      )}
     </div>
   );
 };

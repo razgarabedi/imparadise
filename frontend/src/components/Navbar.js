@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../contexts/ThemeContext';
@@ -7,11 +7,13 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { t, i18n } = useTranslation();
   const { settings } = useSettings();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const profileMenuRef = useRef(null);
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -21,6 +23,20 @@ const Navbar = () => {
     logout();
     navigate('/login');
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [profileMenuRef]);
+  
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   return (
     <nav className="sticky top-0 bg-background shadow-md z-50">
@@ -42,9 +58,24 @@ const Navbar = () => {
                 {user.role === 'admin' && (
                   <Link to="/admin" className="text-text hover:text-accent">{t('navbar.admin')}</Link>
                 )}
-                <button onClick={handleLogout} className="bg-accent hover:bg-accent-hover text-white font-bold py-2 px-4 rounded-md">
-                  {t('navbar.logout')}
-                </button>
+                <div className="relative" ref={profileMenuRef}>
+                  <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="flex items-center space-x-2 focus:outline-none">
+                    <img
+                      className="w-8 h-8 rounded-full"
+                      src={user.profile_picture_url ? `${API_BASE_URL}${user.profile_picture_url}` : `https://picsum.photos/40`}
+                      alt={user.username}
+                    />
+                    <span className="text-text font-semibold">{user.username}</span>
+                  </button>
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-2 py-2 w-48 bg-background border rounded shadow-xl">
+                      <Link to="/profile" onClick={() => setIsProfileOpen(false)} className="block px-4 py-2 text-text hover:bg-background-muted">{t('navbar.profile')}</Link>
+                      <button onClick={() => { handleLogout(); setIsProfileOpen(false); }} className="w-full text-left block px-4 py-2 text-danger hover:bg-background-muted">
+                        {t('navbar.logout')}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <>
@@ -63,7 +94,7 @@ const Navbar = () => {
             </div>
           </div>
           <div className="md:hidden flex items-center">
-             <button onClick={toggleTheme} className="text-text hover:text-accent p-2 rounded-full mr-2">
+            <button onClick={toggleTheme} className="text-text hover:text-accent p-2 rounded-full mr-2">
               {theme === 'light' ? '🌙' : '☀️'}
             </button>
             <button onClick={() => setIsOpen(!isOpen)} className="text-text focus:outline-none">
@@ -79,6 +110,7 @@ const Navbar = () => {
         {user ? (
           <>
             <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block py-2 px-4 text-sm text-text hover:bg-background-muted">{t('navbar.dashboard')}</Link>
+            <Link to="/profile" onClick={() => setIsOpen(false)} className="block py-2 px-4 text-sm text-text hover:bg-background-muted">{t('navbar.profile')}</Link>
             {user.role === 'admin' && (
               <Link to="/admin" onClick={() => setIsOpen(false)} className="block py-2 px-4 text-sm text-text hover:bg-background-muted">{t('navbar.admin')}</Link>
             )}
@@ -93,8 +125,8 @@ const Navbar = () => {
           </>
         )}
         <div className="flex items-center justify-center py-2 space-x-2">
-            <button onClick={() => {changeLanguage('en'); setIsOpen(false);}} className={`px-2 py-1 text-sm rounded-md ${i18n.language === 'en' ? 'bg-accent text-white' : 'text-text'}`}>EN</button>
-            <button onClick={() => {changeLanguage('de'); setIsOpen(false);}} className={`px-2 py-1 text-sm rounded-md ${i18n.language === 'de' ? 'bg-accent text-white' : 'text-text'}`}>DE</button>
+          <button onClick={() => { changeLanguage('en'); setIsOpen(false); }} className={`px-2 py-1 text-sm rounded-md ${i18n.language === 'en' ? 'bg-accent text-white' : 'text-text'}`}>EN</button>
+          <button onClick={() => { changeLanguage('de'); setIsOpen(false); }} className={`px-2 py-1 text-sm rounded-md ${i18n.language === 'de' ? 'bg-accent text-white' : 'text-text'}`}>DE</button>
         </div>
       </div>
     </nav>

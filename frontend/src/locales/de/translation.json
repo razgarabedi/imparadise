@@ -5,7 +5,8 @@
     "admin": "Admin",
     "login": "Anmelden",
     "register": "Registrieren",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "profile": "Profil"
   },
   "login": {
     "title": "Melden Sie sich bei Ihrem Konto an",
@@ -15,7 +16,8 @@
     "password": "Passwort",
     "signin": "Anmelden",
     "button": "Anmelden",
-    "failed_login": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
+    "failed_login": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
+    "success_message": "Anmeldung erfolgreich! Sie werden weitergeleitet..."
   },
   "register": {
     "title": "Erstellen Sie ein neues Konto",
@@ -25,7 +27,8 @@
     "email": "E-Mail-Addresse",
     "password": "Passwort",
     "register": "Registrieren",
-    "failed_register": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    "failed_register": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "success_message": "Registrierung erfolgreich! Sie werden angemeldet..."
   },
   "dashboard": {
     "title": "Ihre Ordner",
@@ -123,5 +126,19 @@
     "storage_limit_exceeded": "Speicherlimit überschritten. Sie können diese Dateien nicht hochladen.",
     "upload_failed": "Hochladen fehlgeschlagen. Ein unbekannter Fehler ist aufgetreten.",
     "upload_failed_network": "Hochladen fehlgeschlagen. Es konnte keine Verbindung zum Server hergestellt werden."
+  },
+  "profile": {
+    "title": "Benutzerprofil",
+    "picture": "Profilbild",
+    "uploadPicture": "Bild hochladen",
+    "updateProfile": "Profil aktualisieren",
+    "username": "Benutzername",
+    "email": "E-Mail",
+    "update": "Aktualisieren",
+    "changePassword": "Passwort ändern",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "confirmNewPassword": "Neues Passwort bestätigen",
+    "changePasswordBtn": "Passwort ändern"
   }
 } 
