@@ -109,10 +109,7 @@ const PublicFolderPage = () => {
       const response = await imageService.downloadImages(
         { imageIds: selectedImages },
         (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setDownloadProgress(percentCompleted);
+          setDownloadProgress(progressEvent.loaded);
         }
       );
       
@@ -144,10 +141,7 @@ const PublicFolderPage = () => {
       const response = await folderService.downloadFolder(
         folderId,
         (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setDownloadProgress(percentCompleted);
+          setDownloadProgress(progressEvent.loaded);
         }
       );
       const blob = new Blob([response.data], { type: 'application/zip' });
@@ -213,12 +207,11 @@ const PublicFolderPage = () => {
         <>
         {isDownloading && (
           <div className="mb-4">
-            <p className="text-text">{t('folder_detail.downloading_images')}... {downloadProgress}%</p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-              <div
-                className="bg-blue-600 h-2.5 rounded-full"
-                style={{ width: `${downloadProgress}%` }}
-              ></div>
+            <p className="text-text">
+              {t('folder_detail.downloading_images')}... {(downloadProgress / 1024 / 1024).toFixed(2)} MB
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
+              <div className="bg-blue-600 h-2.5 rounded-full animate-pulse"></div>
             </div>
           </div>
         )}

@@ -1,17 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 5000;
 const host = process.env.HOST || 'localhost';
-
-const tempDir = path.join(__dirname, 'tmp');
-if (!fs.existsSync(tempDir)) {
-  fs.mkdirSync(tempDir, { recursive: true });
-}
 
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:3001'

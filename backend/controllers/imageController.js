@@ -1,5 +1,4 @@
 const fs = require('fs').promises;
-const fsExtra = require('fs-extra');
 const path = require('path');
 const archiver = require('archiver');
 const { v4: uuidv4 } = require('uuid');
@@ -240,62 +239,24 @@ exports.downloadBulkImages = async (req, res) => {
             folderName = folder.name;
         }
         
-        const tempDir = path.join(__dirname, '..', 'tmp');
-        const tempFileName = `${uuidv4()}.zip`;
-        const tempFilePath = path.join(tempDir, tempFileName);
-
-        const output = fsExtra.createWriteStream(tempFilePath);
+        const uploadsDir = path.join(__dirname, '..', 'uploads');
         const archive = archiver('zip', {
             zlib: { level: 9 }
         });
 
-        output.on('close', async () => {
-            try {
-                const fileSize = archive.pointer();
-                res.setHeader('Content-Length', fileSize);
-                res.attachment(`${folderName}.zip`);
+        res.attachment(`${folderName}.zip`);
+        archive.pipe(res);
 
-                const readStream = fsExtra.createReadStream(tempFilePath);
-                readStream.pipe(res);
-
-                readStream.on('end', () => {
-                    fsExtra.unlink(tempFilePath, (err) => {
-                        if (err) console.error('Error deleting temp zip file:', err);
-                    });
-                });
-
-                readStream.on('error', (err) => {
-                    console.error('Error streaming temp zip file:', err);
-                    fsExtra.unlink(tempFilePath, () => {});
-                    if (!res.headersSent) {
-                        res.status(500).send('Error sending file');
-                    }
-                });
-            } catch (err) {
-                console.error('Error during file streaming:', err);
-                fsExtra.unlink(tempFilePath, () => {});
-                if (!res.headersSent) {
-                    res.status(500).send('Error preparing file for download.');
-                }
-            }
-        });
-
-        archive.on('error', (err) => {
-            console.error('Archiver error:', err);
-            fsExtra.unlink(tempFilePath, () => {});
-            if (!res.headersSent) {
-                res.status(500).send('Error creating zip archive.');
-            }
-        });
-
-        archive.pipe(output);
-
-        const uploadsDir = path.join(__dirname, '..', 'uploads');
         for (const image of images) {
             if (image.stored_filename) {
                 const imagePath = path.join(uploadsDir, image.folder_id.toString(), image.stored_filename);
-                if (await fsExtra.pathExists(imagePath)) {
+                try {
+                    await fs.access(imagePath);
                     archive.file(imagePath, { name: image.filename });
+                } catch (err) {
+                    if (err.code !== 'ENOENT') {
+                        console.error(`File not found or unreadable, skipping: ${imagePath}`, err);
+                    }
                 }
             }
         }
@@ -304,8 +265,6 @@ exports.downloadBulkImages = async (req, res) => {
 
     } catch (error) {
         console.error("Error downloading images:", error);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Error preparing images for download.' });
-        }
+        res.status(500).json({ error: 'Error preparing images for download.' });
     }
-}; 
+};
