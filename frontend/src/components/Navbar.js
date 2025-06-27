@@ -1,24 +1,25 @@
 import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
-import authService from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { t, i18n } = useTranslation();
   const { settings } = useSettings();
-  const user = authService.getCurrentUser();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
 
   const handleLogout = () => {
-    authService.logout();
-    window.location.reload();
+    logout();
+    navigate('/login');
   };
 
   return (

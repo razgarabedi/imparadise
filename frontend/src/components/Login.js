@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import authService from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -9,15 +9,15 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
   const { t } = useTranslation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      await authService.login(usernameOrEmail, password);
+      await login(usernameOrEmail, password);
       navigate('/dashboard');
-      window.location.reload();
     } catch (err) {
       setError(t('login.failed_login'));
     }

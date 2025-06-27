@@ -1,46 +1,67 @@
-const pool = require('../config/db');
+const db = require('../config/db');
 
-const User = {
-  async findByUsername(username) {
-    const res = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    return res.rows[0];
-  },
+class User {
+  static async findByUsername(username) {
+    const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+    return rows[0];
+  }
 
-  async findByEmail(email) {
-    const res = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    return res.rows[0];
-  },
+  static async findByEmail(email) {
+    const { rows } = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    return rows[0];
+  }
 
-  async create(username, email, passwordHash, role = 'user') {
-    const res = await pool.query(
-      'INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING *',
+  static async findById(id) {
+    const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+    return rows[0];
+  }
+
+  static async create(username, email, passwordHash, role = 'user') {
+    const { rows } = await db.query(
+      'INSERT INTO users (username, email, password_hash, role, storage_limit, storage_used) VALUES ($1, $2, $3, $4, 5368709120, 0) RETURNING *',
       [username, email, passwordHash, role]
     );
-    return res.rows[0];
-  },
+    return rows[0];
+  }
 
-  async count() {
-    const res = await pool.query('SELECT COUNT(*) FROM users');
-    return parseInt(res.rows[0].count, 10);
-  },
+  static async count() {
+    const { rows } = await db.query('SELECT COUNT(*) FROM users');
+    return parseInt(rows[0].count, 10);
+  }
 
-  async findAll() {
-    const res = await pool.query('SELECT id, username, email, role, created_at, updated_at FROM users');
-    return res.rows;
-  },
+  static async findAll() {
+    const { rows } = await db.query('SELECT id, username, email, role, created_at, updated_at, storage_limit, storage_used FROM users');
+    return rows;
+  }
 
-  async updateRole(id, role) {
-    const res = await pool.query(
+  static async updateRole(id, role) {
+    const { rows } = await db.query(
       'UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
       [role, id]
     );
-    return res.rows[0];
-  },
+    return rows[0];
+  }
 
-  async delete(id) {
-    const res = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
-    return res.rows[0];
-  },
-};
+  static async delete(id) {
+    const { rows } = await db.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
+    return rows[0];
+  }
+
+  static async updateStorageUsed(userId, storageChange) {
+    const { rows } = await db.query(
+      'UPDATE users SET storage_used = storage_used + $1 WHERE id = $2 RETURNING *',
+      [storageChange, userId]
+    );
+    return rows[0];
+  }
+
+  static async updateStorageLimit(userId, newLimit) {
+    const { rows } = await db.query(
+      'UPDATE users SET storage_limit = $1 WHERE id = $2 RETURNING *',
+      [newLimit, userId]
+    );
+    return rows[0];
+  }
+}
 
 module.exports = User; 

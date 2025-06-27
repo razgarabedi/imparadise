@@ -6,7 +6,6 @@ import folderService from '../services/folderService';
 import imageService from '../services/imageService';
 import settingsService from '../services/settingsService';
 import ImagePreviewModal from './ImagePreviewModal';
-import { useSettings } from '../contexts/SettingsContext';
 
 const FolderDetail = () => {
   const { folderId } = useParams();
@@ -16,7 +15,6 @@ const FolderDetail = () => {
   const [error, setError] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [maxUploadSize, setMaxUploadSize] = useState(10485760); // Default 10MB
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,8 +23,6 @@ const FolderDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(null);
   const [filesUploaded, setFilesUploaded] = useState(0);
   const [totalFilesToUpload, setTotalFilesToUpload] = useState(0);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { settings } = useSettings();
   const { t } = useTranslation();
 
   const fetchFolderData = useCallback(async () => {
@@ -72,33 +68,43 @@ const FolderDetail = () => {
     setFilesUploaded(0);
     setError('');
 
-    const backendSkippedFiles = [];
-    const failedFiles = [];
-
-    for (const file of acceptedFiles) {
-      try {
-        const response = await imageService.uploadImages([file], folderId);
-        if (response.data.skippedFiles && response.data.skippedFiles.length > 0) {
-          backendSkippedFiles.push(...response.data.skippedFiles);
+    try {
+      const onUploadProgress = (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadMessage(`${t('folder_detail.uploading')} ${percentCompleted}%`);
+        if (percentCompleted === 100) {
+            setUploadMessage(t('folder_detail.processing'));
         }
-        setFilesUploaded(prev => prev + 1);
-      } catch (err) {
-        console.error("Upload failed for a file:", err);
-        failedFiles.push(file.name);
-      }
-    }
-    
-    let finalMessage = t('folder_detail.upload_finished');
-    if (backendSkippedFiles.length > 0) {
-      finalMessage += ` ${t('folder_detail.backend_skipped', { skippedNames: backendSkippedFiles.join(', ') })}`;
-    }
-    if (failedFiles.length > 0) {
-        setError(prev => `${prev} ${t('folder_detail.failed_uploads', { failedNames: failedFiles.join(', ') })}`);
-    }
+      };
 
-    setUploadMessage(finalMessage);
-    setIsUploading(false);
-    fetchFolderData();
+      const response = await imageService.uploadImages(acceptedFiles, folderId, onUploadProgress);
+      
+      let finalMessage = response.data.message || t('folder_detail.upload_finished');
+      if (response.data.skippedFiles && response.data.skippedFiles.length > 0) {
+        finalMessage += ` ${t('folder_detail.backend_skipped', { skippedNames: response.data.skippedFiles.join(', ') })}`;
+      }
+      setUploadMessage(finalMessage);
+      
+    } catch (err) {
+      console.error("Upload failed:", err);
+      if (err.response) {
+        const apiError = err.response.data.error || err.response.data.message;
+        if (err.response.status === 413) {
+          setError(t('errors.storage_limit_exceeded'));
+        } else if (apiError) {
+          setError(apiError);
+        } else {
+          setError(t('errors.upload_failed'));
+        }
+      } else if (err.request) {
+        setError(t('errors.upload_failed_network'));
+      } else {
+        setError(t('errors.upload_failed'));
+      }
+    } finally {
+      setIsUploading(false);
+      fetchFolderData();
+    }
   }, [folderId, fetchFolderData, t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 

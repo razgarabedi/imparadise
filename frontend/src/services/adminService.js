@@ -15,6 +15,10 @@ const deleteUser = (id) => {
   return axios.delete(API_URL + `users/${id}`, { headers: authHeader() });
 };
 
+const updateUserStorageLimit = (userId, storageLimit) => {
+  return axios.put(API_URL + `users/${userId}/storage-limit`, { storageLimit }, { headers: authHeader() });
+};
+
 const getSettings = () => {
   return axios.get(API_URL + 'settings', { headers: authHeader() });
 };
@@ -40,6 +44,7 @@ const adminService = {
   getAllUsers,
   updateUserRole,
   deleteUser,
+  updateUserStorageLimit,
   getSettings,
   updateSetting,
   uploadSettingImage,

@@ -65,8 +65,16 @@ const fileFilter = (req, file, cb) => {
 
 const createUploader = async () => {
     try {
+        let maxUploadSize = 20971520; // Default 20MB
         const maxUploadSizeSetting = await Setting.get('max_upload_size');
-        const maxUploadSize = maxUploadSizeSetting ? parseInt(maxUploadSizeSetting.value, 10) : 20971520; // Default 20MB
+        
+        if (maxUploadSizeSetting && maxUploadSizeSetting.value) {
+            const parsedSize = parseInt(maxUploadSizeSetting.value, 10);
+            if (!isNaN(parsedSize)) {
+                maxUploadSize = parsedSize;
+            }
+        }
+
         return multer({
             storage: storage,
             fileFilter: fileFilter,

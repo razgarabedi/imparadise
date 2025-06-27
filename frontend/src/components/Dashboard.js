@@ -2,13 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import folderService from '../services/folderService';
+import authService from '../services/authService';
 import CreateFolderModal from './CreateFolderModal';
 import EditFolderModal from './EditFolderModal';
 import DeleteFolderModal from './DeleteFolderModal';
+import StorageUsage from './StorageUsage';
 
 const Dashboard = () => {
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [copiedFolderId, setCopiedFolderId] = useState(null);
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -33,9 +36,21 @@ const Dashboard = () => {
     );
   }, []);
 
+  const fetchUser = useCallback(() => {
+      authService.getCurrentUser().then(
+          (response) => {
+              setUser(response.data);
+          },
+          (error) => {
+              console.error("Error fetching user data:", error);
+          }
+      )
+  }, []);
+
   useEffect(() => {
     fetchFolders();
-  }, [fetchFolders]);
+    fetchUser();
+  }, [fetchFolders, fetchUser]);
 
   const handleFolderCreated = () => {
     setIsCreateModalOpen(false);
@@ -89,6 +104,8 @@ const Dashboard = () => {
         </button>
       </div>
       
+      {user && <StorageUsage storageUsed={user.storage_used} storageLimit={user.storage_limit} />}
+
       <CreateFolderModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

@@ -56,6 +56,8 @@
     "gallery_title": "Galerie",
     "confirm_delete": "Sind Sie sicher, dass Sie dieses Bild löschen möchten?",
     "download_all": "Alle herunterladen",
+    "no_valid_files": "Es wurden keine gültigen Dateien zum Hochladen ausgewählt.",
+    "processing": "Bilder werden verarbeitet...",
     "dropzone_text": "Dateien hier ablegen oder klicken, um sie auszuwählen",
     "upload_status": "Lade {{filesUploaded}} von {{totalFilesToUpload}} Dateien hoch...",
     "upload_finished": "Hochladen abgeschlossen.",
@@ -116,5 +118,10 @@
   "download": "Herunterladen",
   "select_for_bulk_actions": "Für Massenaktionen auswählen",
   "delete": "Löschen",
-  "download_selected": "Ausgewählte herunterladen"
+  "download_selected": "Ausgewählte herunterladen",
+  "errors": {
+    "storage_limit_exceeded": "Speicherlimit überschritten. Sie können diese Dateien nicht hochladen.",
+    "upload_failed": "Hochladen fehlgeschlagen. Ein unbekannter Fehler ist aufgetreten.",
+    "upload_failed_network": "Hochladen fehlgeschlagen. Es konnte keine Verbindung zum Server hergestellt werden."
+  }
 } 

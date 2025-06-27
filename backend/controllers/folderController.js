@@ -133,9 +133,11 @@ exports.downloadFolder = async (req, res) => {
 
     const uploadsDir = path.join(__dirname, '..', 'uploads');
     for (const image of images) {
-      const imagePath = path.join(uploadsDir, image.stored_filename);
-      if (fs.existsSync(imagePath)) {
-        archive.file(imagePath, { name: image.filename });
+      if (image.stored_filename) {
+        const imagePath = path.join(uploadsDir, image.folder_id.toString(), image.stored_filename);
+        if (fs.existsSync(imagePath)) {
+          archive.file(imagePath, { name: image.filename });
+        }
       }
     }
 

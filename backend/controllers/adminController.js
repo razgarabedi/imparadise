@@ -39,6 +39,27 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+exports.updateUserStorageLimit = async (req, res) => {
+    const { userId } = req.params;
+    const { storageLimit } = req.body;
+
+    if (storageLimit === undefined || storageLimit === null || isNaN(storageLimit)) {
+        return res.status(400).json({ error: 'Invalid storage limit provided.' });
+    }
+
+    try {
+        const integerStorageLimit = Math.round(Number(storageLimit));
+        const result = await User.updateStorageLimit(userId, integerStorageLimit);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        res.json({ message: 'User storage limit updated successfully.' });
+    } catch (error) {
+        console.error('Error updating user storage limit:', error);
+        res.status(500).json({ error: 'Error updating user storage limit.' });
+    }
+};
+
 exports.getSettings = async (req, res) => {
   try {
     const settings = await Setting.getAll();

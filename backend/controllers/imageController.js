@@ -5,6 +5,7 @@ const Image = require('../models/Image');
 const Folder = require('../models/Folder');
 const Setting = require('../models/Setting');
 const imageProcessingService = require('../services/imageProcessingService');
+const User = require('../models/User');
 
 const DEFAULT_MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -39,47 +40,55 @@ exports.uploadImage = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: You do not have permission to upload to this folder.' });
     }
 
+    const currentUser = await User.findById(user.id);
+    if (!currentUser) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const storageUsed = Number(currentUser.storage_used);
+    const storageLimit = Number(currentUser.storage_limit);
+
+    let totalUploadSize = 0;
+    for (const file of files) {
+      totalUploadSize += file.size;
+    }
+
+    if (storageUsed + totalUploadSize > storageLimit) {
+      // Clean up uploaded files that haven't been processed
+      for (const file of files) {
+        fs.unlinkSync(file.path);
+      }
+      return res.status(413).json({ error: 'Storage limit exceeded.' });
+    }
+
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const uploadsDir = path.join(__dirname, '..', 'uploads');
     const newImages = [];
     
     for (const file of files) {
-      const localUrl = `${protocol}://${req.get('host')}/uploads/${file.filename}`;
+      const processedImage = await imageProcessingService.processAndSaveImage(file, folderId);
       
-      let thumbnailFilename = null;
-      let thumbnailUrl = null;
-      let previewFilename = null;
-      let previewUrl = null;
-      
-      try {
-        const thumbnailResult = await imageProcessingService.generateThumbnail(file.path, uploadsDir);
-        thumbnailFilename = thumbnailResult.thumbnailFilename;
-        thumbnailUrl = `${protocol}://${req.get('host')}/uploads/${thumbnailFilename}`;
-        
-        const previewResult = await imageProcessingService.generatePreview(file.path, uploadsDir);
-        previewFilename = previewResult.previewFilename;
-        previewUrl = `${protocol}://${req.get('host')}/uploads/${previewFilename}`;
-      } catch (processingError) {
-        console.error('Image processing failed for file:', file.filename, processingError);
-        // Decide if you want to continue without thumbnail/preview or skip this file
-      }
+      const localUrl = `${protocol}://${req.get('host')}/${processedImage.path}`;
+      const thumbnailUrl = `${protocol}://${req.get('host')}/${processedImage.thumbnail_path}`;
+      const previewUrl = `${protocol}://${req.get('host')}/${processedImage.preview_path}`;
 
       const newImage = await Image.create(
         file.originalname,
-        file.filename,
-        file.mimetype,
+        processedImage.filename,
+        processedImage.mimeType,
         file.size,
         folderId,
         user.id,
         localUrl,
-        thumbnailFilename,
+        processedImage.thumbnail_filename,
         thumbnailUrl,
-        previewFilename,
+        processedImage.preview_filename,
         previewUrl
       );
       newImages.push(newImage);
     }
     
+    await User.updateStorageUsed(user.id, totalUploadSize);
+
     const response = {
         newImages,
         message: 'Images uploaded successfully.'
@@ -93,13 +102,15 @@ exports.uploadImage = async (req, res) => {
     res.status(201).json(response);
   } catch (error) {
     console.error("Error uploading image:", error);
-    // If something goes wrong after the file is saved, delete the files
     if (files && files.length > 0) {
       for (const file of files) {
         try {
-          fs.unlinkSync(file.path);
+          // file.path might not exist if processing failed early
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
         } catch (unlinkError) {
-          console.error('Error deleting file:', unlinkError);
+          console.error('Error deleting file after upload error:', unlinkError);
         }
       }
     }
@@ -132,7 +143,7 @@ exports.getImagesInFolder = async (req, res) => {
 };
 
 exports.deleteImage = async (req, res) => {
-    const { id } = req.params; // Changed from imageId to id to match router
+    const { id } = req.params;
     const user = req.user;
 
     try {
@@ -145,22 +156,38 @@ exports.deleteImage = async (req, res) => {
             return res.status(403).json({ error: 'Forbidden: You do not have permission to delete this image.' });
         }
         
-        const uploadsDir = path.join(__dirname, '..', 'uploads');
-        const imagePath = path.join(uploadsDir, image.stored_filename);
-        
-        // Delete original image file
-        if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-        }
+        if (image.stored_filename) {
+            const uploadsDir = path.join(__dirname, '..', 'uploads');
+            const imageFolderPath = path.join(uploadsDir, image.folder_id.toString());
 
-        // Delete thumbnail file if it exists
-        if (image.thumbnail_filename) {
-            const thumbnailPath = path.join(uploadsDir, image.thumbnail_filename);
-            if (fs.existsSync(thumbnailPath)) {
-                fs.unlinkSync(thumbnailPath);
+            const imagePath = path.join(imageFolderPath, image.stored_filename);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+
+            if (image.thumbnail_filename) {
+                const thumbnailPath = path.join(imageFolderPath, image.thumbnail_filename);
+                if (fs.existsSync(thumbnailPath)) {
+                    fs.unlinkSync(thumbnailPath);
+                }
+            }
+            
+            if (image.preview_filename) {
+                const previewPath = path.join(imageFolderPath, image.preview_filename);
+                if (fs.existsSync(previewPath)) {
+                    fs.unlinkSync(previewPath);
+                }
+            }
+
+            if (fs.existsSync(imageFolderPath)) {
+                const files = fs.readdirSync(imageFolderPath);
+                if (files.length === 0) {
+                    fs.rmdirSync(imageFolderPath);
+                }
             }
         }
-
+        
+        await User.updateStorageUsed(image.user_id, -image.size);
         await Image.delete(id);
 
         res.json({ message: 'Image deleted successfully.' });
@@ -214,9 +241,11 @@ exports.downloadBulkImages = async (req, res) => {
         archive.pipe(res);
 
         for (const image of images) {
-            const imagePath = path.join(uploadsDir, image.stored_filename);
-            if (fs.existsSync(imagePath)) {
-                archive.file(imagePath, { name: image.filename });
+            if (image.stored_filename) {
+                const imagePath = path.join(uploadsDir, image.folder_id.toString(), image.stored_filename);
+                if (fs.existsSync(imagePath)) {
+                    archive.file(imagePath, { name: image.filename });
+                }
             }
         }
 

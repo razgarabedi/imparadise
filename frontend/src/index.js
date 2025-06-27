@@ -6,6 +6,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { AuthProvider } from './contexts/AuthContext';
 import './i18n';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -14,7 +15,9 @@ root.render(
     <Suspense fallback="loading">
       <ThemeProvider>
         <SettingsProvider>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </SettingsProvider>
       </ThemeProvider>
     </Suspense>
