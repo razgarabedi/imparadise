@@ -68,43 +68,38 @@ const FolderDetail = () => {
     setFilesUploaded(0);
     setError('');
 
-    try {
-      const onUploadProgress = (progressEvent) => {
-        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        setUploadMessage(`${t('folder_detail.uploading')} ${percentCompleted}%`);
-        if (percentCompleted === 100) {
-            setUploadMessage(t('folder_detail.processing'));
+    for (let i = 0; i < acceptedFiles.length; i++) {
+        const file = acceptedFiles[i];
+        try {
+            const onUploadProgress = (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadMessage(`${t('folder_detail.uploading')} ${i + 1}/${acceptedFiles.length}: ${file.name} - ${percentCompleted}%`);
+                if (percentCompleted === 100) {
+                    setUploadMessage(t('folder_detail.processing_file', { current: i + 1, total: acceptedFiles.length, filename: file.name }));
+                }
+            };
+            await imageService.uploadImage(file, folderId, onUploadProgress);
+            setFilesUploaded(prev => prev + 1);
+        } catch (err) {
+            console.error(`Upload failed for ${file.name}:`, err);
+            let errorMessage = t('errors.upload_failed_for', { filename: file.name });
+            if (err.response) {
+                const apiError = err.response.data.error || err.response.data.message;
+                if (err.response.status === 413) {
+                    errorMessage += ` - ${t('errors.storage_limit_exceeded')}`;
+                } else if (apiError) {
+                    errorMessage += ` - ${apiError}`;
+                }
+            } else if (err.request) {
+                errorMessage += ` - ${t('errors.upload_failed_network')}`;
+            }
+            setError(prevError => prevError ? `${prevError}\n${errorMessage}` : errorMessage);
         }
-      };
-
-      const response = await imageService.uploadImages(acceptedFiles, folderId, onUploadProgress);
-      
-      let finalMessage = response.data.message || t('folder_detail.upload_finished');
-      if (response.data.skippedFiles && response.data.skippedFiles.length > 0) {
-        finalMessage += ` ${t('folder_detail.backend_skipped', { skippedNames: response.data.skippedFiles.join(', ') })}`;
-      }
-      setUploadMessage(finalMessage);
-      
-    } catch (err) {
-      console.error("Upload failed:", err);
-      if (err.response) {
-        const apiError = err.response.data.error || err.response.data.message;
-        if (err.response.status === 413) {
-          setError(t('errors.storage_limit_exceeded'));
-        } else if (apiError) {
-          setError(apiError);
-        } else {
-          setError(t('errors.upload_failed'));
-        }
-      } else if (err.request) {
-        setError(t('errors.upload_failed_network'));
-      } else {
-        setError(t('errors.upload_failed'));
-      }
-    } finally {
-      setIsUploading(false);
-      fetchFolderData();
     }
+
+    setIsUploading(false);
+    setUploadMessage(t('folder_detail.upload_finished'));
+    fetchFolderData();
   }, [folderId, fetchFolderData, t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 

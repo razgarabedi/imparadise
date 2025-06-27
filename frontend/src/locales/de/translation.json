@@ -63,10 +63,12 @@
     "processing": "Bilder werden verarbeitet...",
     "dropzone_text": "Dateien hier ablegen oder klicken, um sie auszuwählen",
     "upload_status": "Lade {{filesUploaded}} von {{totalFilesToUpload}} Dateien hoch...",
-    "upload_finished": "Hochladen abgeschlossen.",
+    "upload_finished": "Hochladen abgeschlossen. Ordnerinhalt wird aktualisiert...",
+    "processing_file": "Verarbeite {{current}}/{{total}}: {{filename}}",
     "backend_skipped": "Übersprungene Dateien (nicht unterstützter Typ auf dem Backend): {{skippedNames}}",
     "failed_uploads": "Fehler beim Hochladen von: {{failedNames}}",
-    "skipped_unsupported": "Übersprungene nicht unterstützte Dateien: {{rejectedNames}}"
+    "skipped_unsupported": "Übersprungene nicht unterstützte Dateien: {{rejectedNames}}",
+    "delete_error": "Bild konnte nicht gelöscht werden."
   },
   "public_folder": {
     "empty_folder": "Dieser Ordner ist leer."
@@ -123,9 +125,10 @@
   "delete": "Löschen",
   "download_selected": "Ausgewählte herunterladen",
   "errors": {
-    "storage_limit_exceeded": "Speicherlimit überschritten. Sie können diese Dateien nicht hochladen.",
-    "upload_failed": "Hochladen fehlgeschlagen. Ein unbekannter Fehler ist aufgetreten.",
-    "upload_failed_network": "Hochladen fehlgeschlagen. Es konnte keine Verbindung zum Server hergestellt werden."
+    "storage_limit_exceeded": "Speicherlimit überschritten. Datei kann nicht hochgeladen werden.",
+    "upload_failed": "Hochladen fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "upload_failed_for": "Hochladen für {{filename}} fehlgeschlagen",
+    "upload_failed_network": "Hochladen fehlgeschlagen. Überprüfen Sie Ihre Netzwerkverbindung."
   },
   "profile": {
     "title": "Benutzerprofil",

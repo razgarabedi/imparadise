@@ -115,14 +115,15 @@
   "delete": "Delete",
   "dropzone_text": "Drag 'n' drop some files here, or click to select files",
   "upload_status": "Uploading {{filesUploaded}} of {{totalFilesToUpload}} files...",
-  "upload_finished": "Finished uploading.",
-  "backend_skipped": "Skipped files (unsupported type on backend): {{skippedNames}}",
+  "upload_finished": "Upload finished. Refreshing folder contents...",
+  "backend_skipped": "Skipped files that already exist or are unsupported: {{skippedNames}}",
   "failed_uploads": "Failed to upload: {{failedNames}}",
   "skipped_unsupported": "Skipped unsupported files: {{rejectedNames}}",
   "errors": {
-    "storage_limit_exceeded": "Storage limit exceeded. You cannot upload these files.",
-    "upload_failed": "Upload failed. An unknown error occurred.",
-    "upload_failed_network": "Upload failed. Could not connect to the server."
+    "storage_limit_exceeded": "Storage limit exceeded. Cannot upload file.",
+    "upload_failed": "Upload failed. Please try again.",
+    "upload_failed_for": "Upload failed for {{filename}}",
+    "upload_failed_network": "Upload failed. Check your network connection."
   },
   "profile": {
     "title": "User Profile",
@@ -137,5 +138,8 @@
     "newPassword": "New Password",
     "confirmNewPassword": "Confirm New Password",
     "changePasswordBtn": "Change Password"
-  }
+  },
+  "processing_file": "Processing {{current}}/{{total}}: {{filename}}",
+  "processing": "Processing... this may take a moment.",
+  "delete_error": "Failed to delete image."
 } 

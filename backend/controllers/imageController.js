@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const archiver = require('archiver');
 const Image = require('../models/Image');
@@ -105,12 +105,12 @@ exports.uploadImage = async (req, res) => {
     if (files && files.length > 0) {
       for (const file of files) {
         try {
-          // file.path might not exist if processing failed early
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path);
-          }
+          await fs.access(file.path);
+          await fs.unlink(file.path);
         } catch (unlinkError) {
-          console.error('Error deleting file after upload error:', unlinkError);
+          if (unlinkError.code !== 'ENOENT') {
+            console.error('Error deleting file after upload error:', unlinkError);
+          }
         }
       }
     }
@@ -156,34 +156,38 @@ exports.deleteImage = async (req, res) => {
             return res.status(403).json({ error: 'Forbidden: You do not have permission to delete this image.' });
         }
         
+        const uploadsDir = path.join(__dirname, '..', 'uploads');
+        const imageFolderPath = path.join(uploadsDir, image.folder_id.toString());
+        
+        const deleteFile = async (filePath) => {
+            try {
+                await fs.access(filePath);
+                await fs.unlink(filePath);
+            } catch (err) {
+                if (err.code !== 'ENOENT') {
+                    console.error(`Error deleting file ${filePath}:`, err);
+                }
+            }
+        };
+        
         if (image.stored_filename) {
-            const uploadsDir = path.join(__dirname, '..', 'uploads');
-            const imageFolderPath = path.join(uploadsDir, image.folder_id.toString());
+            await deleteFile(path.join(imageFolderPath, image.stored_filename));
+        }
+        if (image.thumbnail_filename) {
+            await deleteFile(path.join(imageFolderPath, image.thumbnail_filename));
+        }
+        if (image.preview_filename) {
+            await deleteFile(path.join(imageFolderPath, image.preview_filename));
+        }
 
-            const imagePath = path.join(imageFolderPath, image.stored_filename);
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
+        try {
+            const files = await fs.readdir(imageFolderPath);
+            if (files.length === 0) {
+                await fs.rmdir(imageFolderPath);
             }
-
-            if (image.thumbnail_filename) {
-                const thumbnailPath = path.join(imageFolderPath, image.thumbnail_filename);
-                if (fs.existsSync(thumbnailPath)) {
-                    fs.unlinkSync(thumbnailPath);
-                }
-            }
-            
-            if (image.preview_filename) {
-                const previewPath = path.join(imageFolderPath, image.preview_filename);
-                if (fs.existsSync(previewPath)) {
-                    fs.unlinkSync(previewPath);
-                }
-            }
-
-            if (fs.existsSync(imageFolderPath)) {
-                const files = fs.readdirSync(imageFolderPath);
-                if (files.length === 0) {
-                    fs.rmdirSync(imageFolderPath);
-                }
+        } catch (err) {
+            if (err.code !== 'ENOENT') {
+                console.error(`Error reading or removing directory ${imageFolderPath}:`, err);
             }
         }
         
@@ -243,8 +247,13 @@ exports.downloadBulkImages = async (req, res) => {
         for (const image of images) {
             if (image.stored_filename) {
                 const imagePath = path.join(uploadsDir, image.folder_id.toString(), image.stored_filename);
-                if (fs.existsSync(imagePath)) {
+                try {
+                    await fs.access(imagePath);
                     archive.file(imagePath, { name: image.filename });
+                } catch (err) {
+                    if (err.code !== 'ENOENT') {
+                        console.error(`File not found or unreadable, skipping: ${imagePath}`, err);
+                    }
                 }
             }
         }

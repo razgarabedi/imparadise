@@ -108,13 +108,29 @@ class ImageProcessingService {
     await fs.mkdir(folderUploadDir, { recursive: true });
 
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const extension = path.extname(file.originalname);
+    let extension = path.extname(file.originalname);
     const baseFilename = path.basename(file.originalname, extension);
+
+    // Ensure we handle AVIF and other formats that need conversion
+    const isAvif = file.mimetype === 'image/avif';
+    const needsConversion = !['.jpeg', '.jpg', '.png', '.webp'].includes(extension.toLowerCase());
+
+    if (isAvif || needsConversion) {
+      extension = '.jpg'; // Convert to JPEG
+    }
 
     const newFilename = `${baseFilename}-${uniqueSuffix}${extension}`;
     const newPath = path.join(folderUploadDir, newFilename);
 
-    await fs.rename(file.path, newPath);
+    // Process the image: convert if necessary, otherwise just move
+    if (isAvif || needsConversion) {
+      await sharp(file.path)
+        .jpeg({ quality: 90 })
+        .toFile(newPath);
+      await fs.unlink(file.path); // Clean up original temp file
+    } else {
+      await fs.rename(file.path, newPath);
+    }
 
     try {
       const originalMetadata = await sharp(newPath).metadata();
@@ -126,10 +142,11 @@ class ImageProcessingService {
         .resize({ width: 200 })
         .toFile(thumbPath);
 
-      const previewFilename = `preview-${newFilename}`;
+      const previewFilename = `preview-${newFilename.substring(0, newFilename.lastIndexOf('.'))}.webp`;
       const previewPath = path.join(folderUploadDir, previewFilename);
       await sharp(newPath)
         .resize({ width: 1200, withoutEnlargement: true })
+        .webp({ quality: 85 })
         .toFile(previewPath);
 
       try {
@@ -162,7 +179,7 @@ class ImageProcessingService {
         filename: newFilename,
         path: dbPath(newFilename),
         size: totalSize,
-        mimeType: file.mimetype,
+        mimeType: isAvif || needsConversion ? 'image/jpeg' : file.mimetype,
         thumbnail_filename: thumbFilename,
         thumbnail_path: dbPath(thumbFilename),
         preview_filename: previewFilename,
