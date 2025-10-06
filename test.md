@@ -1,6 +1,6 @@
 # UML Aktivitätsdiagramm - Übungsaufgaben für das 3er-Team
 
-**Teammitglied:** [Ihr Name]  
+**Teammitglied:** Razgar
 **Aufgabe:** Zwei Übungsaufgaben mit Lösungen, Quellenangaben und weiterführende Informationen
 
 ---
